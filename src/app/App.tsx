@@ -23,6 +23,8 @@ import { DataUpload } from './pages/admin/DataUpload';
 
 // Principal Pages
 import { PrincipalDashboard } from './pages/principal/PrincipalDashboard';
+import { PrincipalContentEditor } from './pages/principal/PrincipalContentEditor';
+import { AuditLog } from './pages/principal/AuditLog';
 
 // Reception/Front Office Pages
 import { ReceptionDashboard } from './pages/reception/ReceptionDashboard';
@@ -101,16 +103,36 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Principal Protected Routes - Only 'principal' role */}
+          {/* Principal Protected Routes - 'principal' role has full access */}
+          <Route path="/principal" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/principal/dashboard" element={
             <ProtectedRoute allowedRoles={['principal']}>
               <PrincipalDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/principal/editor" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalContentEditor />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/audit" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <AuditLog />
+            </ProtectedRoute>
+          } />
 
-          {/* Reception/Front Office Protected Routes - Only 'front_office' role */}
+          {/* Reception/Front Office Protected Routes - 'front_office' role */}
+          <Route path="/reception" element={
+            <ProtectedRoute allowedRoles={['front_office', 'principal']}>
+              <ReceptionDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/reception/dashboard" element={
-            <ProtectedRoute allowedRoles={['front_office']}>
+            <ProtectedRoute allowedRoles={['front_office', 'principal']}>
               <ReceptionDashboard />
             </ProtectedRoute>
           } />

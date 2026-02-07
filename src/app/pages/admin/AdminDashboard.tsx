@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../../lib/firebase';
-import { LayoutDashboard, FileText, Upload, Users, LogOut, TrendingUp, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, FileText, Upload, Users, LogOut, TrendingUp, GraduationCap, Wrench } from 'lucide-react';
+import { DataSeeder } from '../../components/admin/DataSeeder';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -160,6 +161,14 @@ export function AdminDashboard() {
               </Link>
             </div>
           </div>
+        </section>
+        {/* Developer Tools Section */}
+        <section className="mt-12">
+          <div className="flex items-center gap-3 mb-6">
+            <Wrench className="size-6 text-amber-600" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-primary">Developer Tools</h2>
+          </div>
+          <DataSeeder />
         </section>
       </div>
     </main>

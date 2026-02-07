@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowLeft, Copy, Download } from 'lucide-react';
+import { Sparkles, ArrowLeft, Copy, Download, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+
+type ContentLocation = 'home' | 'events' | 'notice';
 
 export function ContentStudio() {
   // NOTE: Auth is handled by ProtectedRoute wrapper in App.tsx
   const [prompt, setPrompt] = useState('');
+  const [location, setLocation] = useState<ContentLocation>('home');
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -182,6 +185,28 @@ For more information, please contact the administration office or visit our webs
                     className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground resize-none"
                     required
                   />
+                </div>
+
+                {/* Location Dropdown */}
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-sm font-medium text-body mb-2"
+                  >
+                    <MapPin className="size-4 inline-block mr-1" />
+                    Content Location
+                  </label>
+                  <select
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value as ContentLocation)}
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                  >
+                    <option value="home">🏠 Home Page</option>
+                    <option value="events">📅 Events Section</option>
+                    <option value="notice">📢 Notice Board</option>
+                  </select>
+                  <p className="text-xs text-muted mt-1">Where this content will be displayed</p>
                 </div>
 
                 <button
