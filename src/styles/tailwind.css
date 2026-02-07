@@ -1,0 +1,20 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+
+/* 👇 ADD THIS SECTION TO FIX THE ERROR */
+@theme {
+  /* This defines 'text-body', 'bg-body', 'border-body' */
+  --color-body: #374151;
+
+  /* Your Project Brand Colors (from Design Guide) */
+  --color-primary: #2C1F70;
+  --color-secondary: #D8D1E9;
+  --color-accent: #EFD22E;
+  
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #EFD22E;
+}
