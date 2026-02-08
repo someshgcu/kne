@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Palette, AlertTriangle } from 'lucide-react';
-import { EditableWrapper } from '../../components/admin/EditableWrapper';
+import { ArrowLeft, Palette, AlertTriangle, ExternalLink } from 'lucide-react';
 import { HeroSection } from '../../components/home/HeroSection';
 import { PrincipalMessage } from '../../components/home/PrincipalMessage';
 import { NewsTicker } from '../../components/home/NewsTicker';
 import { Testimonials } from '../../components/home/Testimonials';
+import { EditableWrapper } from '../../components/admin/EditableWrapper';
 
 export function VisualContentEditor() {
     return (
@@ -28,13 +28,16 @@ export function VisualContentEditor() {
                                 </div>
                             </div>
                         </div>
-                        <Link
-                            to="/"
+                        {/* Clean anchor tag for preview - no onClick handlers */}
+                        <a
+                            href="/"
                             target="_blank"
-                            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors"
                         >
-                            Preview Live Site →
-                        </Link>
+                            <ExternalLink className="size-4" />
+                            Preview Live Site
+                        </a>
                     </div>
                 </div>
             </header>
@@ -44,20 +47,22 @@ export function VisualContentEditor() {
                 <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-amber-800 text-sm">
                     <AlertTriangle className="size-4" />
                     <span>
-                        <strong>Editor Mode:</strong> Hover over sections to see edit buttons. Click any section to edit its content.
+                        <strong>Editor Mode:</strong> Hover over sections to see blue edit borders. Click any element to edit its content.
                     </span>
                 </div>
             </div>
 
-            {/* Visual Editor Content - Renders Homepage Sections */}
+            {/* Visual Editor Content - Renders Homepage Sections with editorMode */}
             <div className="visual-editor-mode">
-                {/* Hero Section */}
-                <EditableWrapper sectionId="hero_section" label="Hero Section">
-                    <HeroSection />
-                </EditableWrapper>
+                {/* Hero Section - Now with atomic editing (title, subtitle, CTA each editable) */}
+                <HeroSection editorMode={true} />
 
                 {/* Principal Message */}
-                <EditableWrapper sectionId="principal_message" label="Principal's Message">
+                <EditableWrapper
+                    sectionId="principal_message_text"
+                    label="Principal's Message"
+                    defaultContent="Welcome to our esteemed institution. At INCPUC, we are committed to nurturing young minds and preparing them for a bright future. Our dedicated faculty and state-of-the-art facilities ensure that every student receives the best possible education."
+                >
                     <div className="py-16 bg-secondary/10">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <PrincipalMessage />
@@ -65,8 +70,12 @@ export function VisualContentEditor() {
                     </div>
                 </EditableWrapper>
 
-                {/* News Ticker */}
-                <EditableWrapper sectionId="news_section" label="News Section">
+                {/* News Section */}
+                <EditableWrapper
+                    sectionId="news_section_title"
+                    label="News Section"
+                    defaultContent="Latest News & Updates"
+                >
                     <div className="py-12 bg-background">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <h2 className="text-2xl font-bold text-foreground mb-6">Latest News</h2>
@@ -76,7 +85,11 @@ export function VisualContentEditor() {
                 </EditableWrapper>
 
                 {/* Testimonials */}
-                <EditableWrapper sectionId="testimonials_section" label="Testimonials">
+                <EditableWrapper
+                    sectionId="testimonials_title"
+                    label="Testimonials Section"
+                    defaultContent="What Our Students Say"
+                >
                     <div className="py-16 bg-secondary/5">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <h2 className="text-2xl font-bold text-foreground text-center mb-8">What Our Students Say</h2>
@@ -86,7 +99,11 @@ export function VisualContentEditor() {
                 </EditableWrapper>
 
                 {/* About Section */}
-                <EditableWrapper sectionId="about_section" label="About Section">
+                <EditableWrapper
+                    sectionId="about_content"
+                    label="About Section"
+                    defaultContent="INCPUC is a premier pre-university college committed to academic excellence and holistic development. With state-of-the-art facilities and experienced faculty, we prepare students for success in higher education and beyond."
+                >
                     <section className="py-16 bg-background">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="text-center max-w-3xl mx-auto">
@@ -101,7 +118,11 @@ export function VisualContentEditor() {
                 </EditableWrapper>
 
                 {/* Contact Section */}
-                <EditableWrapper sectionId="contact_section" label="Contact Info">
+                <EditableWrapper
+                    sectionId="contact_info"
+                    label="Contact Information"
+                    defaultContent='{"email": "info@incpuc.edu", "phone": "+91 80 1234 5678", "address": "Bangalore, Karnataka"}'
+                >
                     <section className="py-16 bg-primary text-primary-foreground">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="text-center">

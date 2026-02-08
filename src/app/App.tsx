@@ -20,6 +20,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { LayoutManager } from './pages/admin/LayoutManager';
 import { ContentStudio } from './pages/admin/ContentStudio';
 import { DataUpload } from './pages/admin/DataUpload';
+import { AIContentGenerator } from './pages/admin/AIContentGenerator';
+import { BlogEditor } from './pages/admin/BlogEditor';
 
 // Principal Pages
 import { PrincipalDashboard } from './pages/principal/PrincipalDashboard';
@@ -104,6 +106,16 @@ export default function App() {
           <Route path="/admin/data-upload" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <DataUpload />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-generator" element={
+            <ProtectedRoute allowedRoles={['admin', 'principal']}>
+              <AIContentGenerator />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/blog-editor" element={
+            <ProtectedRoute allowedRoles={['admin', 'principal']}>
+              <BlogEditor />
             </ProtectedRoute>
           } />
 

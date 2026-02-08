@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { Lock, Mail, GraduationCap, Loader2, AlertCircle, WifiOff, AlertTriangle } from 'lucide-react';
+import { Lock, Mail, GraduationCap, Loader2, AlertCircle, WifiOff, AlertTriangle, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { auth, db, initializeAuthPersistence } from '../../../lib/firebase';
+import { toast } from 'sonner';
 import type { UserRole } from '../../components/auth/ProtectedRoute';
 
 // Valid roles (lowercase)
@@ -21,10 +22,14 @@ function normalizeRole(role: unknown): UserRole | null {
 export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isStorageError, setIsStorageError] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const hasInitialized = useRef(false);
@@ -44,12 +49,10 @@ export function AdminLogin() {
 
         if (!persistenceResult.success) {
           console.warn('[AdminLogin] Persistence init failed:', persistenceResult.error);
-          // Don't block login, just warn
         }
 
-        // Set up auth state listener - ONLY for initial check, NOT for navigation
+        // Set up auth state listener
         unsubscribe = onAuthStateChanged(auth, async (user) => {
-          // Only check on initial load, not after login
           if (hasRedirected.current) return;
 
           if (user) {
@@ -61,17 +64,12 @@ export function AdminLogin() {
                 const rawRole = userDoc.data().role;
                 const normalizedRole = normalizeRole(rawRole);
 
-                console.log('[AdminLogin] Existing auth check - rawRole:', rawRole, '-> normalized:', normalizedRole);
-
-                // Validate role before redirecting
                 if (normalizedRole) {
                   hasRedirected.current = true;
                   redirectBasedOnRole(normalizedRole);
                   return;
                 }
               }
-              // If we get here, user exists but no valid role - let them stay on login
-              // They can try logging in again or see the error
             } catch (err) {
               console.error('[AdminLogin] Error checking existing auth:', err);
               const errorStr = String(err);
@@ -108,7 +106,6 @@ export function AdminLogin() {
     const state = location.state as { error?: string } | null;
     if (state?.error) {
       setError(state.error);
-      // Clear the state so error doesn't persist on refresh
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
@@ -143,6 +140,37 @@ export function AdminLogin() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+
+    setIsSendingReset(true);
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetEmailSent(true);
+      toast.success('Password reset email sent! Check your inbox.');
+    } catch (err: unknown) {
+      console.error('[AdminLogin] Password reset error:', err);
+      if (err instanceof Error && 'code' in err) {
+        const firebaseError = err as { code: string };
+        if (firebaseError.code === 'auth/user-not-found') {
+          toast.error('No account found with this email address.');
+        } else if (firebaseError.code === 'auth/invalid-email') {
+          toast.error('Invalid email address format.');
+        } else {
+          toast.error('Failed to send reset email. Please try again.');
+        }
+      } else {
+        toast.error('Failed to send reset email. Please try again.');
+      }
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -150,17 +178,14 @@ export function AdminLogin() {
     setIsLoading(true);
 
     try {
-      // Step 1: Initialize persistence before login attempt
       const persistenceResult = await initializeAuthPersistence();
       if (!persistenceResult.success) {
         console.warn('[AdminLogin] Persistence failed before login, continuing anyway');
       }
 
-      // Step 2: Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Step 3: Immediately fetch the user's Firestore profile
       let userDoc;
       try {
         const userDocRef = doc(db, 'users', user.uid);
@@ -169,27 +194,22 @@ export function AdminLogin() {
         console.error('[AdminLogin] Firestore error:', firestoreErr);
         const errorStr = String(firestoreErr);
 
-        // Check for storage/access errors
         if (errorStr.includes('storage') || errorStr.includes('quota') || errorStr.includes('access')) {
           setIsStorageError(true);
           setError('Storage access is blocked. Please exit Incognito mode or enable cookies in your browser settings.');
-          // Sign out to prevent stuck state
           await signOut(auth);
           setIsLoading(false);
           return;
         }
 
-        // For other Firestore errors, sign out and show error
         await signOut(auth);
         setError('Unable to verify your account. Please check your internet connection and try again.');
         setIsLoading(false);
         return;
       }
 
-      // Step 4: Validate the role
       if (!userDoc.exists()) {
         console.error('[AdminLogin] User document not found');
-        // Sign out and show error - DO NOT REDIRECT
         await signOut(auth);
         setError('Your account exists but has no role assigned. Please contact administrator.');
         setIsLoading(false);
@@ -200,11 +220,8 @@ export function AdminLogin() {
       const rawRole = userData?.role;
       const normalizedRole = normalizeRole(rawRole);
 
-      console.log('[AdminLogin] Login - rawRole:', rawRole, '-> normalized:', normalizedRole);
-
       if (!normalizedRole) {
         console.error('[AdminLogin] Invalid role:', rawRole);
-        // Sign out and show error - DO NOT REDIRECT
         await signOut(auth);
         setError(`Access Denied: Invalid role "${rawRole}" assigned to your account. Valid roles: ${VALID_ROLES.join(', ')}.`);
         setIsLoading(false);
@@ -212,8 +229,6 @@ export function AdminLogin() {
       }
 
       const role = normalizedRole;
-
-      // Step 5: Valid role - Navigate to appropriate dashboard
       hasRedirected.current = true;
       redirectBasedOnRole(role);
 
@@ -222,7 +237,6 @@ export function AdminLogin() {
 
       const errorStr = String(err);
 
-      // Check for storage errors
       if (errorStr.includes('storage') || errorStr.includes('quota') || errorStr.includes('access')) {
         setIsStorageError(true);
         setError('Storage access is blocked. Please exit Incognito mode or enable cookies in your browser settings.');
@@ -230,7 +244,6 @@ export function AdminLogin() {
         return;
       }
 
-      // Handle Firebase Auth errors
       if (err instanceof Error && 'code' in err) {
         const firebaseError = err as { code: string };
         setError(getErrorMessage(firebaseError.code));
@@ -301,6 +314,13 @@ export function AdminLogin() {
               </div>
             )}
 
+            {/* Reset Email Sent Success */}
+            {resetEmailSent && (
+              <div className="px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                ✓ Password reset email sent! Check your inbox.
+              </div>
+            )}
+
             <div>
               <label
                 htmlFor="email"
@@ -338,15 +358,48 @@ export function AdminLogin() {
                 </div>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="block w-full pl-10 pr-3 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full pl-10 pr-12 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-5 text-muted hover:text-foreground transition-colors" />
+                  ) : (
+                    <Eye className="size-5 text-muted hover:text-foreground transition-colors" />
+                  )}
+                </button>
               </div>
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isSendingReset || !email.trim()}
+                className="text-sm text-accent hover:underline disabled:opacity-50 disabled:no-underline flex items-center gap-1"
+              >
+                {isSendingReset ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="size-3" />
+                    Forgot Password?
+                  </>
+                )}
+              </button>
             </div>
 
             <button
