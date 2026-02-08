@@ -79,11 +79,20 @@ export function PrincipalNewsManager() {
     // Open modal for editing existing item
     const handleEdit = (item: NewsItem) => {
         setEditingItem(item);
+        // Convert date to YYYY-MM-DD format for the date input
+        let dateValue = '';
+        if (item.date) {
+            try {
+                dateValue = new Date(item.date).toISOString().split('T')[0];
+            } catch {
+                dateValue = new Date().toISOString().split('T')[0];
+            }
+        }
         setFormData({
             title: item.title,
             content: item.content,
-            date: item.date,
-            category: item.category,
+            date: dateValue,
+            category: item.category || 'General',
             isVisible: item.isVisible ?? true
         });
         setShowModal(true);
@@ -98,10 +107,22 @@ export function PrincipalNewsManager() {
 
         setSaving(true);
         try {
+            // Convert YYYY-MM-DD to ISO string for storage
+            const isoDate = formData.date
+                ? new Date(formData.date + 'T00:00:00').toISOString()
+                : new Date().toISOString();
+
+            const excerpt = formData.content.trim().substring(0, 150) + (formData.content.length > 150 ? '...' : '');
+
             if (editingItem) {
                 // Update existing
                 await updateDoc(doc(db, 'news', editingItem.id), {
-                    ...formData,
+                    title: formData.title.trim(),
+                    content: formData.content.trim(),
+                    date: isoDate,
+                    category: formData.category,
+                    isVisible: formData.isVisible,
+                    excerpt,
                     updatedAt: serverTimestamp()
                 });
                 await logAction(auth.currentUser, 'Updated News', `Updated news: "${formData.title}"`);
@@ -109,7 +130,13 @@ export function PrincipalNewsManager() {
             } else {
                 // Add new
                 await addDoc(collection(db, 'news'), {
-                    ...formData,
+                    title: formData.title.trim(),
+                    content: formData.content.trim(),
+                    date: isoDate,
+                    category: formData.category,
+                    isVisible: formData.isVisible,
+                    excerpt,
+                    location: 'news',
                     createdAt: serverTimestamp()
                 });
                 await logAction(auth.currentUser, 'Created News', `Created news: "${formData.title}"`);
@@ -118,7 +145,11 @@ export function PrincipalNewsManager() {
             setShowModal(false);
         } catch (error) {
             console.error('Error saving news:', error);
-            toast.error('Failed to save news');
+            if (error instanceof Error && error.message.includes('No document')) {
+                toast.error('Cannot update this item. It might not exist in the database.');
+            } else {
+                toast.error('Failed to save news');
+            }
         }
         setSaving(false);
     };
@@ -148,7 +179,11 @@ export function PrincipalNewsManager() {
             toast.success(item.isVisible ? 'Hidden from home page' : 'Visible on home page');
         } catch (error) {
             console.error('Error toggling visibility:', error);
-            toast.error('Failed to update visibility');
+            if (error instanceof Error && error.message.includes('No document')) {
+                toast.error('Cannot update this item. It might not exist in the database.');
+            } else {
+                toast.error('Failed to update visibility');
+            }
         }
     };
 
@@ -220,8 +255,8 @@ export function PrincipalNewsManager() {
                                                 <button
                                                     onClick={() => handleToggleVisibility(item)}
                                                     className={`p-2 rounded-lg transition-colors ${item.isVisible !== false
-                                                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                         }`}
                                                     title={item.isVisible !== false ? 'Visible on home' : 'Hidden from home'}
                                                 >

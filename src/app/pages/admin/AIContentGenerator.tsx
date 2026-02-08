@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Loader2, Lightbulb, FileText } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Lightbulb, FileText, PenLine } from 'lucide-react';
 import { generateBlogPost } from '../../../lib/openrouter';
 import { toast } from 'sonner';
 
@@ -27,23 +27,52 @@ export function AIContentGenerator() {
             const result = await generateBlogPost(topic, keywordList);
 
             if (result.success && result.content) {
-                toast.success('Content generated successfully!');
-                // Navigate to BlogEditor with generated content
+                // Check for weird/invalid responses
+                const content = result.content.trim();
+                const isValidContent = content.length > 50 &&
+                    !content.toLowerCase().includes('analyse the image') &&
+                    !content.toLowerCase().includes('i cannot') &&
+                    !content.toLowerCase().includes('i am unable');
+
+                if (isValidContent) {
+                    toast.success('Content generated successfully!');
+                } else {
+                    toast.warning('AI response may need editing. Opening editor...');
+                }
+
+                // Always navigate with the content - user can edit it
                 navigate('/admin/blog-editor', {
                     state: {
-                        generatedContent: result.content,
+                        generatedContent: content,
                         topic: topic
-                    }
+                    },
+                    replace: false
                 });
             } else {
-                toast.error(result.error || 'Failed to generate content');
+                toast.error(result.error || 'Failed to generate content. Try writing manually.');
             }
         } catch (error) {
             console.error('Generation error:', error);
-            toast.error('An error occurred while generating content');
+            toast.error('An error occurred. Opening manual editor...');
+            // On error, still allow user to write manually with the topic
+            navigate('/admin/blog-editor', {
+                state: {
+                    generatedContent: '',
+                    topic: topic
+                }
+            });
         } finally {
             setIsGenerating(false);
         }
+    };
+
+    const handleSkipAI = () => {
+        navigate('/admin/blog-editor', {
+            state: {
+                generatedContent: '',
+                topic: topic || ''
+            }
+        });
     };
 
     const sampleTopics = [
@@ -59,22 +88,33 @@ export function AIContentGenerator() {
             {/* Header */}
             <header className="bg-card border-b border-border">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            to="/admin/dashboard"
-                            className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="size-5 text-muted" />
-                        </Link>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Sparkles className="size-6 text-purple-600" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-foreground">AI Content Generator</h1>
-                                <p className="text-sm text-muted">Powered by Llama 3</p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link
+                                to="/admin/dashboard"
+                                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                            >
+                                <ArrowLeft className="size-5 text-muted" />
+                            </Link>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                    <Sparkles className="size-6 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-foreground">AI Content Generator</h1>
+                                    <p className="text-sm text-muted">Powered by OpenRouter AI</p>
+                                </div>
                             </div>
                         </div>
+                        {/* Skip AI Button in Header */}
+                        <button
+                            onClick={handleSkipAI}
+                            disabled={isGenerating}
+                            className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                        >
+                            <PenLine className="size-4" />
+                            Write Manually
+                        </button>
                     </div>
                 </div>
             </header>
@@ -131,39 +171,42 @@ export function AIContentGenerator() {
                         </div>
                     </div>
 
-                    {/* Generate Button */}
-                    <button
-                        onClick={handleGenerate}
-                        disabled={isGenerating || !topic.trim()}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isGenerating ? (
-                            <>
-                                <Loader2 className="size-5 animate-spin" />
-                                Generating with AI...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles className="size-5" />
-                                Generate Content
-                            </>
-                        )}
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
+                        {/* Generate Button */}
+                        <button
+                            onClick={handleGenerate}
+                            disabled={isGenerating || !topic.trim()}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="size-5 animate-spin" />
+                                    Generating with AI...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="size-5" />
+                                    Generate Content
+                                </>
+                            )}
+                        </button>
+
+                        {/* Skip AI Button (Prominent) */}
+                        <button
+                            onClick={handleSkipAI}
+                            disabled={isGenerating}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-border text-foreground rounded-lg font-medium hover:bg-secondary transition-all disabled:opacity-50"
+                        >
+                            <PenLine className="size-5" />
+                            Skip AI & Write Manually
+                        </button>
+                    </div>
 
                     {/* Info */}
                     <p className="text-xs text-muted text-center mt-4">
                         AI will generate a blog post about your topic. You can edit it in the next step.
                     </p>
-                </div>
-
-                {/* Direct to Blog Editor */}
-                <div className="mt-6 text-center">
-                    <Link
-                        to="/admin/blog-editor"
-                        className="text-accent hover:underline text-sm"
-                    >
-                        Or write manually without AI →
-                    </Link>
                 </div>
             </main>
         </div>

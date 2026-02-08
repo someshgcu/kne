@@ -9,7 +9,8 @@ import {
     testimonials,
     galleryImages,
     principalMessage,
-    defaultHomeLayout
+    defaultHomeLayout,
+    courses
 } from '../../../data/mockData';
 import { toast } from 'sonner';
 import { Database, Loader2, AlertTriangle } from 'lucide-react';
@@ -22,7 +23,7 @@ export function DataSeeder() {
         const confirmed = window.confirm(
             '⚠️ WARNING: This will seed the database with mock data.\n\n' +
             'This action will add documents to the following collections:\n' +
-            '• teachers\n• news\n• jobs\n• performance\n• testimonials\n• gallery\n• general_content\n• settings\n\n' +
+            '• teachers\n• news\n• jobs\n• performance\n• testimonials\n• gallery\n• courses\n• site_sections\n• settings\n\n' +
             'Are you sure you want to proceed?'
         );
 
@@ -45,7 +46,11 @@ export function DataSeeder() {
             // Seed news collection
             newsItems.forEach((news) => {
                 const docRef = doc(collection(db, 'news'));
-                batch.set(docRef, news);
+                batch.set(docRef, {
+                    ...news,
+                    date: new Date().toISOString(),
+                    excerpt: news.excerpt || news.content.substring(0, 150) + '...'
+                });
             });
 
             // Seed jobs collection
@@ -72,8 +77,14 @@ export function DataSeeder() {
                 batch.set(docRef, image);
             });
 
-            // Seed principal_message in general_content collection
-            const principalRef = doc(db, 'general_content', 'principal_message');
+            // Seed courses collection (NEW)
+            courses.forEach((course) => {
+                const docRef = doc(db, 'courses', course.id);
+                batch.set(docRef, course);
+            });
+
+            // Migrate principal_message to site_sections collection (instead of general_content)
+            const principalRef = doc(db, 'site_sections', 'principal_message');
             batch.set(principalRef, principalMessage);
 
             // Seed home_layout in settings collection
@@ -84,7 +95,7 @@ export function DataSeeder() {
             await batch.commit();
 
             toast.success('✅ Database seeded successfully!', {
-                description: `Added ${teachers.length} teachers, ${newsItems.length} news items, ${jobs.length} jobs, ${performanceData.length} performance records, ${testimonials.length} testimonials, ${galleryImages.length} gallery images, and configuration documents.`
+                description: `Added ${teachers.length} teachers, ${newsItems.length} news items, ${jobs.length} jobs, ${courses.length} courses, and configuration documents.`
             });
         } catch (error) {
             console.error('[DataSeeder] Error seeding database:', error);
@@ -107,8 +118,7 @@ export function DataSeeder() {
                         Database Seeder
                     </h3>
                     <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
-                        Populate the Firestore database with mock data from <code className="bg-amber-200 dark:bg-amber-800 px-1 rounded">mockData.ts</code>.
-                        Use this only for initial setup or development.
+                        Populate the Firestore database with mock data including <strong>courses</strong> and migrate Principal Message to <code className="bg-amber-200 dark:bg-amber-800 px-1 rounded">site_sections</code>.
                     </p>
                     <button
                         onClick={seedDatabase}

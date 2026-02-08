@@ -10,6 +10,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { AdmissionsPage } from './pages/AdmissionsPage';
 import { FacultyPage } from './pages/FacultyPage';
+import { CoursesPage } from './pages/CoursesPage';
+import { CourseDetailsPage } from './pages/CourseDetailsPage';
 import { CareersPage } from './pages/CareersPage';
 import { BlogPage } from './pages/BlogPage';
 import { NotFound } from './pages/NotFound';
@@ -31,6 +33,7 @@ import { PrincipalNewsManager } from './pages/principal/PrincipalNewsManager';
 import { PrincipalFacultyManager } from './pages/principal/PrincipalFacultyManager';
 import { PrincipalReceptionView } from './pages/principal/PrincipalReceptionView';
 import { VisualContentEditor } from './pages/principal/VisualContentEditor';
+import { PrincipalCourseManager } from './pages/principal/PrincipalCourseManager';
 
 // Reception/Front Office Pages
 import { ReceptionDashboard } from './pages/reception/ReceptionDashboard';
@@ -62,6 +65,22 @@ export default function App() {
             <>
               <Header />
               <FacultyPage />
+              <Footer />
+              <Chatbot />
+            </>
+          } />
+          <Route path="/courses" element={
+            <>
+              <Header />
+              <CoursesPage />
+              <Footer />
+              <Chatbot />
+            </>
+          } />
+          <Route path="/courses/:courseId" element={
+            <>
+              <Header />
+              <CourseDetailsPage />
               <Footer />
               <Chatbot />
             </>
@@ -138,6 +157,11 @@ export default function App() {
           <Route path="/principal/faculty" element={
             <ProtectedRoute allowedRoles={['principal']}>
               <PrincipalFacultyManager />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/courses" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalCourseManager />
             </ProtectedRoute>
           } />
           <Route path="/principal/reception-view" element={

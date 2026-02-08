@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Sparkles, Loader2, FileText, MapPin } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Loader2, FileText, MapPin, ImagePlus, X } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../lib/firebase';
 import { polishContent } from '../../../lib/openrouter';
@@ -14,16 +14,75 @@ interface LocationState {
     topic?: string;
 }
 
+// Compress image to WebP format with max width
+async function compressImage(file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const img = new Image();
+
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate new dimensions
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    return;
+                }
+
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to WebP
+                const webpData = canvas.toDataURL('image/webp', quality);
+
+                // Check size (Firestore limit is ~1MB for document)
+                const sizeKB = Math.round((webpData.length * 3) / 4 / 1024);
+                console.log(`[ImageCompress] Compressed to ${width}x${height}, ${sizeKB}KB`);
+
+                if (sizeKB > 900) {
+                    // If still too large, reduce quality further
+                    const reducedData = canvas.toDataURL('image/webp', 0.5);
+                    resolve(reducedData);
+                } else {
+                    resolve(webpData);
+                }
+            };
+
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = e.target?.result as string;
+        };
+
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
 export function BlogEditor() {
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state as LocationState | null;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [displayLocation, setDisplayLocation] = useState<DisplayLocation>('news');
     const [isPolishing, setIsPolishing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageData, setImageData] = useState<string | null>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
 
     // Load generated content from AI generator
     useEffect(() => {
@@ -36,6 +95,46 @@ export function BlogEditor() {
             window.history.replaceState({}, document.title);
         }
     }, [state]);
+
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        // Check original size
+        const sizeMB = file.size / (1024 * 1024);
+        if (sizeMB > 10) {
+            toast.error('Image too large. Maximum 10MB allowed.');
+            return;
+        }
+
+        setIsCompressing(true);
+
+        try {
+            const compressed = await compressImage(file, 800, 0.7);
+            setImagePreview(compressed);
+            setImageData(compressed);
+            toast.success('Image compressed and ready');
+        } catch (error) {
+            console.error('Compression error:', error);
+            toast.error('Failed to process image');
+        } finally {
+            setIsCompressing(false);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+        setImageData(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const handlePolish = async () => {
         if (!content.trim()) {
@@ -78,15 +177,21 @@ export function BlogEditor() {
             // Save to appropriate collection based on location
             const collectionName = displayLocation === 'news' ? 'news' : 'site_content';
 
-            const docData = {
+            const docData: Record<string, unknown> = {
                 title: title.trim(),
                 content: content.trim(),
+                // CRITICAL: date field is required for sorting in useNews
+                date: new Date().toISOString(),
+                // CRITICAL: excerpt field for preview cards
+                excerpt: content.trim().substring(0, 150) + (content.length > 150 ? '...' : ''),
                 location: displayLocation,
                 category: displayLocation === 'news' ? 'General' : displayLocation,
                 showOnHome: displayLocation === 'home',
                 createdAt: serverTimestamp(),
                 createdBy: auth.currentUser?.uid || 'unknown',
-                status: 'published'
+                status: 'published',
+                // Add image if present
+                ...(imageData && { image: imageData })
             };
 
             await addDoc(collection(db, collectionName), docData);
@@ -158,6 +263,56 @@ export function BlogEditor() {
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Enter a compelling title..."
                             className="w-full px-4 py-3 text-lg font-semibold border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
+
+                    {/* Image Upload */}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                            <ImagePlus className="inline size-4 mr-1" />
+                            Featured Image
+                        </label>
+
+                        {imagePreview ? (
+                            <div className="relative inline-block">
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="max-h-48 rounded-lg border border-border"
+                                />
+                                <button
+                                    onClick={handleRemoveImage}
+                                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-accent hover:bg-accent/5 transition-colors"
+                            >
+                                {isCompressing ? (
+                                    <div className="flex items-center justify-center gap-2 text-muted">
+                                        <Loader2 className="size-5 animate-spin" />
+                                        Compressing image...
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ImagePlus className="size-8 text-muted mx-auto mb-2" />
+                                        <p className="text-sm text-muted">Click to upload image</p>
+                                        <p className="text-xs text-muted/70 mt-1">Auto-compressed to WebP (max 800px)</p>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                            className="hidden"
                         />
                     </div>
 

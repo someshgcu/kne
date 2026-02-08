@@ -11,7 +11,9 @@ import {
     Newspaper,
     ExternalLink,
     Shield,
-    Palette
+    Palette,
+    Upload,
+    BookOpen
 } from 'lucide-react';
 
 export function PrincipalDashboard() {
@@ -27,6 +29,13 @@ export function PrincipalDashboard() {
     };
 
     const hubCards = [
+        {
+            title: 'Manage Courses',
+            description: 'Add, edit, and manage courses offered',
+            icon: BookOpen,
+            path: '/principal/courses',
+            color: 'bg-indigo-500'
+        },
         {
             title: 'Manage News',
             description: 'Add, edit, and manage news articles',
@@ -47,6 +56,13 @@ export function PrincipalDashboard() {
             icon: Building2,
             path: '/principal/reception-view',
             color: 'bg-green-500'
+        },
+        {
+            title: 'Bulk Data Upload',
+            description: 'Import faculty and student data from Excel',
+            icon: Upload,
+            path: '/admin/data-upload',
+            color: 'bg-amber-500'
         },
         {
             title: 'Visual Editor',

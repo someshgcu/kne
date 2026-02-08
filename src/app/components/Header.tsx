@@ -11,25 +11,25 @@ export function Header() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/admissions', label: 'Admissions' },
-    { path: '/faculty', label: 'Faculty' },
+    { path: '/courses', label: 'Courses' },
     { path: '/news', label: 'News' },
     { path: '/careers', label: 'Careers' }
   ];
 
   return (
-    <header 
+    <header
       className="sticky top-0 z-50 bg-primary shadow-md"
       role="banner"
     >
-      <nav 
+      <nav
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         role="navigation"
         aria-label="Main navigation"
       >
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="flex items-center gap-2 text-primary-foreground hover:opacity-90 transition-opacity"
             aria-label="INCPUC Home"
           >
@@ -43,11 +43,10 @@ export function Header() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  isActive(link.path)
+                className={`px-4 py-2 rounded-md transition-colors ${isActive(link.path)
                     ? 'bg-accent text-accent-foreground'
                     : 'text-primary-foreground hover:bg-primary-foreground/10'
-                }`}
+                  }`}
                 aria-current={isActive(link.path) ? 'page' : undefined}
               >
                 {link.label}
@@ -85,11 +84,10 @@ export function Header() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-md transition-colors ${
-                    isActive(link.path)
+                  className={`px-4 py-2 rounded-md transition-colors ${isActive(link.path)
                       ? 'bg-accent text-accent-foreground'
                       : 'text-primary-foreground hover:bg-primary-foreground/10'
-                  }`}
+                    }`}
                   onClick={() => setMobileMenuOpen(false)}
                   aria-current={isActive(link.path) ? 'page' : undefined}
                 >

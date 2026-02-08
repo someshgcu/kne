@@ -1,8 +1,8 @@
 // src/lib/openrouter.ts
-// OpenRouter AI service using Llama 3 model
+// Fail-Safe AI Client using OpenRouter's Free Tier
 
 interface Message {
-    role: 'user' | 'assistant' | 'system';
+    role: 'user' | 'assistant';
     content: string;
 }
 
@@ -28,13 +28,74 @@ interface GenerateContentResult {
     error?: string;
 }
 
+// API Configuration
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'qwen/qwen-2.5-72b-instruct:free';
+
+// Use the OpenRouter auto-router for free models (automatically picks available free model)
+// Fallback to specific models if needed
+const MODELS = [
+    'openrouter/auto',  // Auto-selects the best available free model
+    'google/gemma-3-4b-it:free',  // Gemma 3 4B
+    'meta-llama/llama-3.3-70b-instruct:free',  // Llama 3.3 70B
+    'deepseek/deepseek-r1-0528:free',  // DeepSeek R1
+];
 
 /**
- * Generate content using OpenRouter AI (Qwen 2.5)
- * @param prompt - The prompt to send to the AI
- * @param systemPrompt - Optional system prompt for context
+ * Try to generate content with a specific model
+ */
+async function tryGenerate(
+    model: string,
+    messages: Message[],
+    apiKey: string
+): Promise<{ success: boolean; content?: string; status?: number }> {
+    try {
+        console.log(`[OpenRouter] Trying model: ${model}`);
+
+        const response = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': window.location.origin,
+                'X-Title': 'INCPUC Admin'
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: messages,
+                max_tokens: 2048,
+                temperature: 0.7
+            })
+        });
+
+        // Return status for retry logic
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.warn(`[OpenRouter] ${model} failed (${response.status}):`, errorText);
+            return { success: false, status: response.status };
+        }
+
+        const data: OpenRouterResponse = await response.json();
+
+        if (!data.choices || data.choices.length === 0) {
+            console.warn(`[OpenRouter] ${model} returned no choices`);
+            return { success: false, status: 200 };
+        }
+
+        const generatedContent = data.choices[0].message.content;
+        console.log(`[OpenRouter] ✓ Success with ${model} (${generatedContent.length} chars)`);
+
+        return { success: true, content: generatedContent };
+
+    } catch (error) {
+        console.error(`[OpenRouter] ${model} exception:`, error);
+        return { success: false, status: 0 };
+    }
+}
+
+/**
+ * Generate content using OpenRouter AI with automatic fallback
+ * @param prompt - The user's message/prompt
+ * @param systemPrompt - Optional context/instructions (will be merged into user message)
  * @returns Generated content result
  */
 export async function generateContent(
@@ -44,93 +105,60 @@ export async function generateContent(
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
     if (!apiKey) {
-        console.error('[OpenRouter] API key not found. Set VITE_OPENROUTER_API_KEY in .env');
+        console.error('[OpenRouter] API key not found');
         return {
             success: false,
             error: 'OpenRouter API key not configured. Please add VITE_OPENROUTER_API_KEY to your .env file.'
         };
     }
 
-    try {
-        const messages: Message[] = [];
+    // CRITICAL: Merge system prompt into user message
+    // Many free models (Gemma, some Llamas) reject role: 'system'
+    const finalContent = systemPrompt
+        ? `System Instructions:\n${systemPrompt}\n\nUser Query:\n${prompt}`
+        : prompt;
 
-        // Add system prompt if provided
-        if (systemPrompt) {
-            messages.push({
-                role: 'system',
-                content: systemPrompt
-            });
-        }
+    // Only use 'user' role for maximum compatibility
+    const messages: Message[] = [{ role: 'user', content: finalContent }];
 
-        // Add user prompt
-        messages.push({
-            role: 'user',
-            content: prompt
-        });
+    // Try each model in order
+    for (const model of MODELS) {
+        const result = await tryGenerate(model, messages, apiKey);
 
-        console.log('[OpenRouter] Sending request to:', DEFAULT_MODEL);
-
-        const response = await fetch(OPENROUTER_API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.origin,
-                'X-Title': 'INCPUC CMS'
-            },
-            body: JSON.stringify({
-                model: DEFAULT_MODEL,
-                messages: messages,
-                max_tokens: 2048,
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[OpenRouter] API error:', response.status, errorText);
+        if (result.success && result.content) {
             return {
-                success: false,
-                error: `API error (${response.status}): ${errorText}`
+                success: true,
+                content: result.content
             };
         }
 
-        const data: OpenRouterResponse = await response.json();
-
-        if (!data.choices || data.choices.length === 0) {
-            return {
-                success: false,
-                error: 'No response generated from AI'
-            };
+        // If rate limited (429), wait briefly before trying next
+        if (result.status === 429) {
+            console.log(`[OpenRouter] Rate limited, waiting 1s before next model...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
-
-        const generatedContent = data.choices[0].message.content;
-        console.log('[OpenRouter] Generated content length:', generatedContent.length);
-
-        return {
-            success: true,
-            content: generatedContent
-        };
-
-    } catch (error) {
-        console.error('[OpenRouter] Request failed:', error);
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error occurred'
-        };
     }
+
+    // All models failed
+    return {
+        success: false,
+        error: 'AI Service is currently busy. Please try again in a few seconds.'
+    };
 }
 
 /**
  * Generate a blog post from a topic
  */
-export async function generateBlogPost(topic: string, keywords?: string[]): Promise<GenerateContentResult> {
+export async function generateBlogPost(
+    topic: string,
+    keywords?: string[]
+): Promise<GenerateContentResult> {
     const keywordStr = keywords?.length ? `Include these keywords: ${keywords.join(', ')}.` : '';
 
-    const systemPrompt = `You are a professional content writer for an educational institution (INCPUC - Pre-University College). 
+    const systemPrompt = `You are a professional content writer for INCPUC (Pre-University College). 
 Write engaging, informative content suitable for a college website. 
 Use a professional yet approachable tone.
-Format your response with a clear structure using headings and paragraphs.`;
+Format your response with clear structure using headings and paragraphs.`;
 
     const prompt = `Write a blog post about: "${topic}"
 

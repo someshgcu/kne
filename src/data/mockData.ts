@@ -8,6 +8,8 @@ export interface Teacher {
   qualifications: string;
   subjects: string[];
   impactScore: string;
+  experience: string;
+  passPercentage: string;
 }
 
 export interface NewsItem {
@@ -52,6 +54,95 @@ export interface PrincipalMessage {
   message: string;
 }
 
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  eligibility: string;
+  image: string;
+  subjects: string[];
+  futureScope: string;
+}
+
+export const courses: Course[] = [
+  {
+    id: 'science-pcmc',
+    title: 'Science (PCMC)',
+    description: 'Physics, Chemistry, Mathematics, Computer Science. Ideal for students aspiring to pursue engineering, technology, data science, and IT careers. Our PCMC program prepares students for JEE Main, JEE Advanced, KCET, BITSAT, and other technical entrance exams.',
+    duration: '2 Years',
+    eligibility: '10th Pass with 75% (Science & Maths)',
+    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80',
+    subjects: ['Physics', 'Chemistry', 'Mathematics', 'Computer Science'],
+    futureScope: `**Engineering & Technology:** Software Engineer, Data Scientist, Machine Learning Engineer, Full-Stack Developer, DevOps Engineer, Cloud Architect, Cybersecurity Analyst.
+
+**Research & Academia:** Research Scientist, University Professor, R&D Engineer at tech giants like Google, Microsoft, Amazon.
+
+**Emerging Fields:** AI/ML Specialist, Blockchain Developer, IoT Engineer, Quantum Computing Researcher, Robotics Engineer.
+
+**Salary Range:** Entry-level ₹6-15 LPA, Experienced ₹25-60+ LPA in top companies.
+
+**Key Entrance Exams:** JEE Main, JEE Advanced, KCET, BITSAT, VITEEE, COMEDK.`
+  },
+  {
+    id: 'science-pcmb',
+    title: 'Science (PCMB)',
+    description: 'Physics, Chemistry, Mathematics, Biology. Perfect for students aiming for medical, pharmaceutical, biotechnology, and research careers. Our PCMB program prepares students for NEET-UG, KCET, AIIMS, and other medical entrance exams.',
+    duration: '2 Years',
+    eligibility: '10th Pass with 75% (Science)',
+    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80',
+    subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+    futureScope: `**Medical Sciences:** Doctor (MBBS), Surgeon, Dentist (BDS), Pharmacist, Medical Researcher, Geneticist, Microbiologist.
+
+**Allied Health:** Physiotherapist, Radiologist, Pathologist, Veterinarian, Public Health Specialist.
+
+**Research & Biotech:** Biotechnologist, Bioinformatics Specialist, Clinical Researcher, Environmental Scientist, Forensic Scientist.
+
+**Salary Range:** Entry-level ₹5-12 LPA, Specialists ₹20-80+ LPA.
+
+**Key Entrance Exams:** NEET-UG, KCET, AIIMS, JIPMER, AFMC.`
+  },
+  {
+    id: 'commerce-ebac',
+    title: 'Commerce (EBAC)',
+    description: 'Economics, Business Studies, Accountancy, Computer Science. Designed for students pursuing careers in chartered accountancy, business management, finance, and entrepreneurship. Prepares for CA, CMA, CS, and MBA entrance exams.',
+    duration: '2 Years',
+    eligibility: '10th Pass with 60%',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80',
+    subjects: ['Economics', 'Business Studies', 'Accountancy', 'Computer Science'],
+    futureScope: `**Finance & Accounting:** Chartered Accountant (CA), Cost Accountant (CMA), Company Secretary (CS), Financial Analyst, Auditor, Tax Consultant.
+
+**Banking & Insurance:** Bank Manager, Investment Banker, Insurance Agent, Credit Analyst, Risk Manager.
+
+**Business & Management:** MBA Graduate, Business Analyst, Consultant, Entrepreneur, Marketing Manager, HR Manager.
+
+**Salary Range:** CA Freshers ₹8-12 LPA, Senior Positions ₹30-60+ LPA.
+
+**Key Entrance Exams:** CA Foundation, IPMAT, CUET, CAT, XAT.`
+  },
+  {
+    id: 'arts-heba',
+    title: 'Arts (HEBA)',
+    description: 'History, Economics, Business Studies, Political Science/Sociology. Ideal for students interested in humanities, civil services, law, journalism, and social sciences. Prepares for UPSC, CLAT, and humanities entrance exams.',
+    duration: '2 Years',
+    eligibility: '10th Pass with 55%',
+    image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80',
+    subjects: ['History', 'Economics', 'Business Studies', 'Political Science'],
+    futureScope: `**Civil Services:** IAS, IPS, IFS Officers, State Civil Services, Public Administration roles.
+
+**Law & Judiciary:** Lawyer, Judge, Legal Advisor, Corporate Counsel, Human Rights Advocate.
+
+**Media & Communication:** Journalist, News Anchor, Content Writer, Documentary Filmmaker, Public Relations Specialist.
+
+**Academia & Research:** Historian, Political Scientist, Economist, University Professor, Policy Researcher.
+
+**Salary Range:** Civil Services ₹10-25 LPA, Top Lawyers ₹20-100+ LPA.
+
+**Key Entrance Exams:** UPSC, CLAT, DU JAT, CUET, State PSC.`
+  }
+];
+
+
 export const teachers: Teacher[] = [
   {
     id: "t1",
@@ -60,7 +151,9 @@ export const teachers: Teacher[] = [
     designation: "Senior Lecturer - Physics",
     qualifications: "M.Sc, Ph.D (Physics), B.Ed",
     subjects: ["Physics"],
-    impactScore: "99% Result in 2024"
+    impactScore: "99% Result in 2024",
+    experience: "15+ Years",
+    passPercentage: "99%"
   },
   {
     id: "t2",
@@ -69,7 +162,9 @@ export const teachers: Teacher[] = [
     designation: "Head of Department - Chemistry",
     qualifications: "M.Sc (Chemistry), B.Ed",
     subjects: ["Chemistry"],
-    impactScore: "98% Result in 2024"
+    impactScore: "98% Result in 2024",
+    experience: "12+ Years",
+    passPercentage: "98%"
   },
   {
     id: "t3",
@@ -78,7 +173,9 @@ export const teachers: Teacher[] = [
     designation: "Mathematics Lecturer",
     qualifications: "M.Sc (Mathematics), B.Ed",
     subjects: ["Mathematics"],
-    impactScore: "97% Result in 2024"
+    impactScore: "97% Result in 2024",
+    experience: "10+ Years",
+    passPercentage: "97%"
   },
   {
     id: "t4",
@@ -87,7 +184,9 @@ export const teachers: Teacher[] = [
     designation: "Computer Science Lecturer",
     qualifications: "M.Tech (Computer Science), B.Ed",
     subjects: ["Computer Science"],
-    impactScore: "100% Result in 2024"
+    impactScore: "100% Result in 2024",
+    experience: "8+ Years",
+    passPercentage: "100%"
   },
   {
     id: "t5",
@@ -96,7 +195,9 @@ export const teachers: Teacher[] = [
     designation: "Senior Lecturer - Biology",
     qualifications: "M.Sc, Ph.D (Biotechnology), B.Ed",
     subjects: ["Biology"],
-    impactScore: "99% Result in 2024"
+    impactScore: "99% Result in 2024",
+    experience: "14+ Years",
+    passPercentage: "99%"
   },
   {
     id: "t6",
@@ -105,7 +206,9 @@ export const teachers: Teacher[] = [
     designation: "Head of Department - Commerce",
     qualifications: "M.Com, CA, B.Ed",
     subjects: ["Accountancy", "Business Studies"],
-    impactScore: "96% Result in 2024"
+    impactScore: "96% Result in 2024",
+    experience: "18+ Years",
+    passPercentage: "96%"
   },
   {
     id: "t7",
@@ -114,7 +217,9 @@ export const teachers: Teacher[] = [
     designation: "Economics Lecturer",
     qualifications: "M.A (Economics), B.Ed",
     subjects: ["Economics"],
-    impactScore: "98% Result in 2024"
+    impactScore: "98% Result in 2024",
+    experience: "9+ Years",
+    passPercentage: "98%"
   },
   {
     id: "t8",
@@ -123,7 +228,31 @@ export const teachers: Teacher[] = [
     designation: "English Language Lecturer",
     qualifications: "M.A (English Literature), B.Ed",
     subjects: ["English"],
-    impactScore: "97% Result in 2024"
+    impactScore: "97% Result in 2024",
+    experience: "11+ Years",
+    passPercentage: "97%"
+  },
+  {
+    id: "t9",
+    name: "Dr. Arun Krishnamurthy",
+    photo: "history-teacher",
+    designation: "Senior Lecturer - History",
+    qualifications: "M.A, Ph.D (History), B.Ed",
+    subjects: ["History"],
+    impactScore: "95% Result in 2024",
+    experience: "16+ Years",
+    passPercentage: "95%"
+  },
+  {
+    id: "t10",
+    name: "Ms. Lakshmi Iyer",
+    photo: "polsci-teacher",
+    designation: "Political Science Lecturer",
+    qualifications: "M.A (Political Science), B.Ed",
+    subjects: ["Political Science"],
+    impactScore: "94% Result in 2024",
+    experience: "7+ Years",
+    passPercentage: "94%"
   }
 ];
 

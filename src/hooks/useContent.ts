@@ -98,7 +98,7 @@ export function useTeachers(): UseFirestoreReturn<Teacher[]> {
 
 /**
  * Hook to fetch principal message from Firestore
- * Fetches from general_content/principal_message document
+ * Fetches from site_sections/principal_message (preferred) or general_content/principal_message (fallback)
  */
 export function usePrincipalMessage(): UseFirestoreReturn<PrincipalMessage | null> {
     const [data, setData] = useState<PrincipalMessage | null>(null);
@@ -106,19 +106,38 @@ export function usePrincipalMessage(): UseFirestoreReturn<PrincipalMessage | nul
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const docRef = doc(db, 'general_content', 'principal_message');
+        // Try site_sections first (new location)
+        const siteSectionsRef = doc(db, 'site_sections', 'principal_message');
 
         const unsubscribe = onSnapshot(
-            docRef,
+            siteSectionsRef,
             (snapshot) => {
                 if (snapshot.exists()) {
                     setData(snapshot.data() as PrincipalMessage);
+                    setLoading(false);
+                    setError(null);
                 } else {
-                    console.warn('[usePrincipalMessage] Document does not exist');
-                    setData(null);
+                    // Fallback to general_content (old location)
+                    const generalContentRef = doc(db, 'general_content', 'principal_message');
+                    onSnapshot(
+                        generalContentRef,
+                        (fallbackSnapshot) => {
+                            if (fallbackSnapshot.exists()) {
+                                setData(fallbackSnapshot.data() as PrincipalMessage);
+                            } else {
+                                console.warn('[usePrincipalMessage] Document does not exist in either location');
+                                setData(null);
+                            }
+                            setLoading(false);
+                            setError(null);
+                        },
+                        (err) => {
+                            console.error('[usePrincipalMessage] Fallback error:', err);
+                            setError(err);
+                            setLoading(false);
+                        }
+                    );
                 }
-                setLoading(false);
-                setError(null);
             },
             (err) => {
                 console.error('[usePrincipalMessage] Error fetching principal message:', err);

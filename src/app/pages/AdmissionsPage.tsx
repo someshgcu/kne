@@ -1,251 +1,319 @@
 import { useState } from 'react';
-import { CheckCircle2, AlertCircle, Calculator, GraduationCap, FileText, Calendar } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import { toast } from 'sonner';
+import {
+  GraduationCap, User, Phone, BookOpen, Award,
+  Send, Loader2, CheckCircle, Phone as PhoneIcon,
+  Mail, MapPin
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function AdmissionsPage() {
-  const [marks, setMarks] = useState('');
-  const [result, setResult] = useState<{
-    eligible: boolean;
-    stream: string;
-    message: string;
-  } | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    stream: '',
+    marks: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handlePredict = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const marksNum = parseFloat(marks);
-    
-    if (isNaN(marksNum) || marksNum < 0 || marksNum > 100) {
-      setResult({
-        eligible: false,
-        stream: '',
-        message: 'Please enter a valid percentage between 0 and 100.'
-      });
-      return;
+  const streams = [
+    { id: 'science-pcmc', title: 'Science (PCMC)' },
+    { id: 'science-pcmb', title: 'Science (PCMB)' },
+    { id: 'commerce-ebac', title: 'Commerce (EBAC)' },
+    { id: 'arts-heba', title: 'Arts (HEBA)' }
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      toast.error('Please enter student name');
+      return false;
     }
+    if (!formData.phone.trim() || !/^\d{10}$/.test(formData.phone)) {
+      toast.error('Please enter a valid 10-digit phone number');
+      return false;
+    }
+    if (!formData.stream) {
+      toast.error('Please select a stream');
+      return false;
+    }
+    if (!formData.marks || isNaN(Number(formData.marks)) || Number(formData.marks) < 0 || Number(formData.marks) > 100) {
+      toast.error('Please enter valid marks percentage (0-100)');
+      return false;
+    }
+    return true;
+  };
 
-    if (marksNum >= 85) {
-      setResult({
-        eligible: true,
-        stream: 'Science',
-        message: 'Congratulations! You have a High Chance for admission to the Science stream. Your excellent marks qualify you for our PCMB/PCMC courses.'
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      // CRITICAL: Save with timestamp field for ReceptionDashboard sorting
+      await addDoc(collection(db, 'admissions'), {
+        studentName: formData.name.trim(),
+        phone: formData.phone.trim(),
+        course: formData.stream,
+        marks: Number(formData.marks),
+        status: 'New',
+        notes: 'Direct Website Enquiry',
+        timestamp: serverTimestamp() // Required for Dashboard ordering
       });
-    } else if (marksNum >= 75) {
-      setResult({
-        eligible: true,
-        stream: 'Science',
-        message: 'Good news! You are eligible for the Science stream. We recommend applying early to secure your seat.'
-      });
-    } else if (marksNum >= 60) {
-      setResult({
-        eligible: true,
-        stream: 'Commerce',
-        message: 'You qualify for the Commerce stream. Our commerce program offers excellent career opportunities in business and finance.'
-      });
-    } else {
-      setResult({
-        eligible: false,
-        stream: '',
-        message: 'Based on your marks, we recommend scheduling a counseling session with our admission team to discuss your options. Please contact us at +91-80-2345-6789.'
-      });
+
+      setIsSubmitted(true);
+      toast.success('Application Sent! We will call you shortly.');
+
+      // Reset form
+      setFormData({ name: '', phone: '', stream: '', marks: '' });
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error('Failed to submit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // Success State
+  if (isSubmitted) {
+    return (
+      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-lg mx-auto text-center">
+          <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-border">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 text-green-600 rounded-full mb-6">
+              <CheckCircle className="size-10" />
+            </div>
+            <h1 className="text-3xl font-bold text-primary mb-4">
+              Enquiry Submitted!
+            </h1>
+            <p className="text-lg text-body mb-6">
+              Thank you for your interest in INCPUC. Our admissions team will call you within <strong>24 hours</strong>.
+            </p>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => setIsSubmitted(false)}
+                className="w-full px-6 py-3 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors font-medium"
+              >
+                Submit Another Enquiry
+              </button>
+              <Link
+                to="/courses"
+                className="w-full px-6 py-3 border border-border rounded-lg hover:bg-secondary transition-colors text-center"
+              >
+                Explore Our Courses
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-full mb-4">
             <GraduationCap className="size-5" aria-hidden="true" />
-            <span className="text-sm font-semibold">Admissions 2026-27</span>
+            <span className="text-sm font-semibold">Admissions Open</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Join INCPUC
+            Admission Enquiry 2026
           </h1>
-          <p className="text-lg text-body max-w-3xl mx-auto">
-            Begin your journey to academic excellence. Check your eligibility and apply today.
+          <p className="text-lg text-body max-w-2xl mx-auto">
+            Fill in your details to request a callback from our admission desk.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-16">
-          {/* Cutoff Predictor */}
-          <section 
-            className="bg-card rounded-2xl shadow-xl p-8 border border-border"
-            aria-labelledby="predictor-heading"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-accent text-accent-foreground p-3 rounded-lg">
-                <Calculator className="size-6" aria-hidden="true" />
-              </div>
-              <div>
-                <h2 id="predictor-heading" className="text-2xl font-bold text-primary">
-                  Cutoff Predictor
-                </h2>
-                <p className="text-sm text-body mt-1">Check your stream eligibility instantly</p>
-              </div>
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Form Card - Takes 3 columns */}
+          <div className="lg:col-span-3 bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
+            <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-6">
+              <h2 className="text-xl font-bold">Request Callback</h2>
+              <p className="text-sm text-primary-foreground/80">We'll get back to you within 24 hours</p>
             </div>
 
-            <form onSubmit={handlePredict} className="space-y-6">
+            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+              {/* Student Name */}
               <div>
-                <label 
-                  htmlFor="marks-input"
-                  className="block text-sm font-medium text-body mb-2"
-                >
-                  Enter your 10th Grade Percentage (%)
+                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                  <User className="size-4 inline mr-2" />
+                  Student Name *
                 </label>
                 <input
-                  id="marks-input"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={marks}
-                  onChange={(e) => setMarks(e.target.value)}
-                  placeholder="e.g., 85.5"
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground text-lg"
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter student's full name"
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                   required
-                  aria-describedby="marks-help"
                 />
-                <p id="marks-help" className="mt-2 text-sm text-muted">
-                  Enter your percentage from 10th standard board exams
-                </p>
               </div>
 
+              {/* Phone Number */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                  <Phone className="size-4 inline mr-2" />
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="10-digit mobile number"
+                  maxLength={10}
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  required
+                />
+              </div>
+
+              {/* Stream Interest */}
+              <div>
+                <label htmlFor="stream" className="block text-sm font-medium text-foreground mb-2">
+                  <BookOpen className="size-4 inline mr-2" />
+                  Stream Interest *
+                </label>
+                <select
+                  id="stream"
+                  name="stream"
+                  value={formData.stream}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  required
+                >
+                  <option value="">Select a stream</option>
+                  {streams.map(stream => (
+                    <option key={stream.id} value={stream.title}>
+                      {stream.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 10th Marks */}
+              <div>
+                <label htmlFor="marks" className="block text-sm font-medium text-foreground mb-2">
+                  <Award className="size-4 inline mr-2" />
+                  10th Standard Marks (%) *
+                </label>
+                <input
+                  type="number"
+                  id="marks"
+                  name="marks"
+                  value={formData.marks}
+                  onChange={handleChange}
+                  placeholder="e.g., 85"
+                  min="0"
+                  max="100"
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  required
+                />
+              </div>
+
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-accent text-accent-foreground px-6 py-4 rounded-lg hover:bg-accent/90 transition-colors font-semibold text-lg shadow-md"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-4 rounded-lg hover:bg-accent/90 transition-colors font-semibold text-lg disabled:opacity-50"
               >
-                Check Eligibility
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="size-5" />
+                    Request Callback
+                  </>
+                )}
               </button>
             </form>
+          </div>
 
-            {/* Result Display */}
-            {result && (
-              <div
-                className={`mt-6 p-6 rounded-lg border-2 ${
-                  result.eligible
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-yellow-50 border-yellow-200'
-                }`}
-                role="alert"
-                aria-live="polite"
-              >
+          {/* Contact Info - Takes 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-card rounded-xl p-6 border border-border">
+              <h3 className="font-bold text-primary mb-4">Contact Us Directly</h3>
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  {result.eligible ? (
-                    <CheckCircle2 className="size-6 text-green-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                  ) : (
-                    <AlertCircle className="size-6 text-yellow-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                  )}
+                  <div className="p-2 bg-accent/10 text-accent rounded-lg">
+                    <PhoneIcon className="size-5" />
+                  </div>
                   <div>
-                    {result.stream && (
-                      <h3 className="font-bold text-lg text-primary mb-2">
-                        {result.stream} Stream
-                      </h3>
-                    )}
-                    <p className="text-body leading-relaxed">
-                      {result.message}
-                    </p>
+                    <p className="text-sm text-muted">Phone</p>
+                    <p className="font-medium text-foreground">+91-80-2345-6789</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-accent/10 text-accent rounded-lg">
+                    <Mail className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted">Email</p>
+                    <p className="font-medium text-foreground">admissions@incpuc.edu.in</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-accent/10 text-accent rounded-lg">
+                    <MapPin className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted">Address</p>
+                    <p className="font-medium text-foreground">123 Education Lane, Jayanagar, Bangalore - 560041</p>
                   </div>
                 </div>
               </div>
-            )}
-          </section>
+            </div>
 
-          {/* Admission Information */}
-          <div className="space-y-6">
-            <section className="bg-card rounded-2xl shadow-md p-8 border border-border">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-secondary text-secondary-foreground p-3 rounded-lg">
-                  <FileText className="size-6" aria-hidden="true" />
-                </div>
-                <h2 className="text-2xl font-bold text-primary">
-                  Eligibility Criteria
-                </h2>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-primary mb-2">Science Stream</h3>
-                  <p className="text-body">Minimum 75% in 10th standard board exams</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary mb-2">Commerce Stream</h3>
-                  <p className="text-body">Minimum 60% in 10th standard board exams</p>
-                </div>
-              </div>
-            </section>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-6 border border-border">
+              <h3 className="font-bold text-primary mb-3">Why Choose INCPUC?</h3>
+              <ul className="space-y-2 text-sm text-body">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="size-4 text-green-500 flex-shrink-0" />
+                  98%+ Pass Rate Consistently
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="size-4 text-green-500 flex-shrink-0" />
+                  Experienced Faculty (10+ Years Avg)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="size-4 text-green-500 flex-shrink-0" />
+                  Modern Infrastructure & Labs
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="size-4 text-green-500 flex-shrink-0" />
+                  Competitive Exam Preparation
+                </li>
+              </ul>
+            </div>
 
-            <section className="bg-card rounded-2xl shadow-md p-8 border border-border">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-secondary text-secondary-foreground p-3 rounded-lg">
-                  <Calendar className="size-6" aria-hidden="true" />
-                </div>
-                <h2 className="text-2xl font-bold text-primary">
-                  Important Dates
-                </h2>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-border">
-                  <span className="text-body">Application Start</span>
-                  <span className="font-semibold text-primary">January 15, 2026</span>
-                </div>
-                <div className="flex justify-between items-center pb-3 border-b border-border">
-                  <span className="text-body">Early Bird Deadline</span>
-                  <span className="font-semibold text-primary">March 1, 2026</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body">Final Deadline</span>
-                  <span className="font-semibold text-primary">March 31, 2026</span>
-                </div>
-              </div>
-            </section>
+            <Link
+              to="/courses"
+              className="block bg-card rounded-xl p-6 border border-border hover:border-accent transition-colors group"
+            >
+              <h3 className="font-bold text-primary mb-2 group-hover:text-accent transition-colors">
+                Explore Our Courses →
+              </h3>
+              <p className="text-sm text-muted">
+                View detailed information about PCMC, PCMB, EBAC, and HEBA streams.
+              </p>
+            </Link>
           </div>
         </div>
-
-        {/* Additional Information */}
-        <section className="bg-primary text-primary-foreground rounded-2xl shadow-xl p-8 md:p-12">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-center">
-              How to Apply
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground rounded-full mb-4 text-xl font-bold">
-                  1
-                </div>
-                <h3 className="font-semibold mb-2">Check Eligibility</h3>
-                <p className="text-sm text-primary-foreground/80">
-                  Use the cutoff predictor to verify your qualification
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground rounded-full mb-4 text-xl font-bold">
-                  2
-                </div>
-                <h3 className="font-semibold mb-2">Submit Documents</h3>
-                <p className="text-sm text-primary-foreground/80">
-                  Bring 10th mark sheet, TC, and 3 passport photos
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground rounded-full mb-4 text-xl font-bold">
-                  3
-                </div>
-                <h3 className="font-semibold mb-2">Complete Registration</h3>
-                <p className="text-sm text-primary-foreground/80">
-                  Pay fees and receive your admission confirmation
-                </p>
-              </div>
-            </div>
-            <div className="mt-8 text-center">
-              <a
-                href="mailto:admissions@incpuc.edu.in?subject=Admission Inquiry"
-                className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-lg hover:bg-accent/90 transition-colors font-semibold shadow-lg"
-              >
-                Contact Admissions Office
-              </a>
-            </div>
-          </div>
-        </section>
       </div>
     </main>
   );

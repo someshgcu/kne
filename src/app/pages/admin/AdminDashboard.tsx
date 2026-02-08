@@ -1,15 +1,53 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
-import { LayoutDashboard, FileText, Upload, Users, LogOut, TrendingUp, GraduationCap, Wrench } from 'lucide-react';
+import { collection, getCountFromServer } from 'firebase/firestore';
+import { auth, db } from '../../../lib/firebase';
+import { LayoutDashboard, FileText, Users, LogOut, TrendingUp, GraduationCap, Wrench, Sparkles, Loader2 } from 'lucide-react';
 import { DataSeeder } from '../../components/admin/DataSeeder';
+
+interface StatsData {
+  totalStudents: number;
+  passRate: string;
+  facultyMembers: number;
+  newsArticles: number;
+}
 
 export function AdminDashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState<StatsData>({
+    totalStudents: 0,
+    passRate: '99%',
+    facultyMembers: 0,
+    newsArticles: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  // NOTE: Auth check is now handled by ProtectedRoute wrapper in App.tsx
-  // No need for useEffect auth check here - if user reaches this component,
-  // they have already been verified by ProtectedRoute
+  // Fetch real stats from Firestore
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [admissionsSnap, teachersSnap, newsSnap] = await Promise.all([
+          getCountFromServer(collection(db, 'admissions')),
+          getCountFromServer(collection(db, 'teachers')),
+          getCountFromServer(collection(db, 'news'))
+        ]);
+
+        setStats({
+          totalStudents: admissionsSnap.data().count || 0,
+          passRate: '99%', // Static for now - no results collection yet
+          facultyMembers: teachersSnap.data().count || 0,
+          newsArticles: newsSnap.data().count || 0
+        });
+      } catch (error) {
+        console.error('[AdminDashboard] Error fetching stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -17,7 +55,6 @@ export function AdminDashboard() {
       navigate('/admin/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
-      // Force navigate even on error
       navigate('/admin/login', { replace: true });
     }
   };
@@ -32,16 +69,16 @@ export function AdminDashboard() {
     },
     {
       title: 'AI Blog Writer',
-      description: 'Generate content using Gemini AI',
-      icon: FileText,
-      path: '/admin/content-studio',
+      description: 'Generate content using AI',
+      icon: Sparkles,
+      path: '/admin/ai-generator',
       color: 'bg-purple-500'
     },
     {
-      title: 'Data Upload',
-      description: 'Upload Excel data for Impact Engine',
-      icon: Upload,
-      path: '/admin/data-upload',
+      title: 'Blog Editor',
+      description: 'Write and edit blog posts manually',
+      icon: FileText,
+      path: '/admin/blog-editor',
       color: 'bg-green-500'
     },
     {
@@ -53,11 +90,11 @@ export function AdminDashboard() {
     }
   ];
 
-  const stats = [
-    { label: 'Total Students', value: '450+', icon: GraduationCap },
-    { label: 'Pass Rate', value: '99%', icon: TrendingUp },
-    { label: 'Faculty Members', value: '8', icon: Users },
-    { label: 'News Articles', value: '5', icon: FileText }
+  const statsDisplay = [
+    { label: 'Total Students', value: statsLoading ? '...' : stats.totalStudents.toString(), icon: GraduationCap },
+    { label: 'Pass Rate', value: stats.passRate, icon: TrendingUp },
+    { label: 'Faculty Members', value: statsLoading ? '...' : stats.facultyMembers.toString(), icon: Users },
+    { label: 'News Articles', value: statsLoading ? '...' : stats.newsArticles.toString(), icon: FileText }
   ];
 
   return (
@@ -89,7 +126,7 @@ export function AdminDashboard() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-primary mb-6">Quick Stats</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => (
+            {statsDisplay.map((stat) => (
               <div
                 key={stat.label}
                 className="bg-card rounded-xl shadow-md border border-border p-6"
@@ -98,6 +135,9 @@ export function AdminDashboard() {
                   <div className="bg-accent text-accent-foreground p-3 rounded-lg">
                     <stat.icon className="size-6" aria-hidden="true" />
                   </div>
+                  {statsLoading && stat.value === '...' && (
+                    <Loader2 className="size-4 animate-spin text-muted" />
+                  )}
                 </div>
                 <p className="text-3xl font-bold text-primary mb-1">{stat.value}</p>
                 <p className="text-sm text-muted">{stat.label}</p>
@@ -154,7 +194,7 @@ export function AdminDashboard() {
                 Edit Homepage
               </Link>
               <Link
-                to="/admin/content-studio"
+                to="/admin/ai-generator"
                 className="bg-primary-foreground/10 hover:bg-primary-foreground/20 px-4 py-3 rounded-lg transition-colors text-center"
               >
                 Create New Post
@@ -162,6 +202,7 @@ export function AdminDashboard() {
             </div>
           </div>
         </section>
+
         {/* Developer Tools Section */}
         <section className="mt-12">
           <div className="flex items-center gap-3 mb-6">
