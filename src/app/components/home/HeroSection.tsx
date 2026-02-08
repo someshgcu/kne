@@ -1,10 +1,50 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, Users, TrendingUp } from 'lucide-react';
+import { ArrowRight, Award, Users, TrendingUp, Loader2 } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { useSiteContent } from '../../../hooks/useSiteContent';
+
+// Default content for fallback
+const defaultHeroContent = {
+  title: 'Shape Your Future at INCPUC',
+  subtitle: "Join India's leading Pre-University College with a proven track record of 99% pass rate and excellence in education.",
+  passRate: '99%',
+  students: '450+',
+  distinction: '85%'
+};
 
 export function HeroSection() {
+  const { content, loading } = useSiteContent('hero_section');
+
+  // Parse content or use defaults
+  let heroData = defaultHeroContent;
+  if (content) {
+    try {
+      // Try to parse as JSON first
+      const parsed = JSON.parse(content);
+      heroData = { ...defaultHeroContent, ...parsed };
+    } catch {
+      // If not JSON, use content as title
+      heroData = { ...defaultHeroContent, title: content };
+    }
+  }
+
+  if (loading) {
+    return (
+      <section
+        className="relative bg-gradient-to-br from-primary via-primary to-secondary py-20 px-4 sm:px-6 lg:px-8"
+        aria-label="Hero section"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="size-8 animate-spin text-primary-foreground/50" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section 
+    <section
       className="relative bg-gradient-to-br from-primary via-primary to-secondary py-20 px-4 sm:px-6 lg:px-8"
       aria-label="Hero section"
     >
@@ -13,13 +53,12 @@ export function HeroSection() {
           {/* Content */}
           <div className="text-center lg:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
-              Shape Your Future at INCPUC
+              {heroData.title}
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-              Join India's leading Pre-University College with a proven track record of 
-              <span className="text-accent font-bold"> 99% pass rate</span> and excellence in education.
+              {heroData.subtitle}
             </p>
-            
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
@@ -43,21 +82,21 @@ export function HeroSection() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-2">
                   <Award className="size-6 text-accent-foreground" aria-hidden="true" />
                 </div>
-                <div className="text-2xl font-bold text-primary-foreground">99%</div>
+                <div className="text-2xl font-bold text-primary-foreground">{heroData.passRate}</div>
                 <div className="text-sm text-primary-foreground/80">Pass Rate</div>
               </div>
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-2">
                   <Users className="size-6 text-accent-foreground" aria-hidden="true" />
                 </div>
-                <div className="text-2xl font-bold text-primary-foreground">450+</div>
+                <div className="text-2xl font-bold text-primary-foreground">{heroData.students}</div>
                 <div className="text-sm text-primary-foreground/80">Students</div>
               </div>
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-2">
                   <TrendingUp className="size-6 text-accent-foreground" aria-hidden="true" />
                 </div>
-                <div className="text-2xl font-bold text-primary-foreground">85%</div>
+                <div className="text-2xl font-bold text-primary-foreground">{heroData.distinction}</div>
                 <div className="text-sm text-primary-foreground/80">Distinction</div>
               </div>
             </div>

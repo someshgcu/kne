@@ -25,6 +25,10 @@ import { DataUpload } from './pages/admin/DataUpload';
 import { PrincipalDashboard } from './pages/principal/PrincipalDashboard';
 import { PrincipalContentEditor } from './pages/principal/PrincipalContentEditor';
 import { AuditLog } from './pages/principal/AuditLog';
+import { PrincipalNewsManager } from './pages/principal/PrincipalNewsManager';
+import { PrincipalFacultyManager } from './pages/principal/PrincipalFacultyManager';
+import { PrincipalReceptionView } from './pages/principal/PrincipalReceptionView';
+import { VisualContentEditor } from './pages/principal/VisualContentEditor';
 
 // Reception/Front Office Pages
 import { ReceptionDashboard } from './pages/reception/ReceptionDashboard';
@@ -112,6 +116,26 @@ export default function App() {
           <Route path="/principal/dashboard" element={
             <ProtectedRoute allowedRoles={['principal']}>
               <PrincipalDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/news" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalNewsManager />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/faculty" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalFacultyManager />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/reception-view" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <PrincipalReceptionView />
+            </ProtectedRoute>
+          } />
+          <Route path="/principal/content" element={
+            <ProtectedRoute allowedRoles={['principal']}>
+              <VisualContentEditor />
             </ProtectedRoute>
           } />
           <Route path="/principal/editor" element={

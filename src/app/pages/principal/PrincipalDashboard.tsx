@@ -7,9 +7,11 @@ import {
     FileText,
     History,
     Building2,
-    Settings,
+    Users,
+    Newspaper,
     ExternalLink,
-    Shield
+    Shield,
+    Palette
 } from 'lucide-react';
 
 export function PrincipalDashboard() {
@@ -26,36 +28,46 @@ export function PrincipalDashboard() {
 
     const hubCards = [
         {
+            title: 'Manage News',
+            description: 'Add, edit, and manage news articles',
+            icon: Newspaper,
+            path: '/principal/news',
+            color: 'bg-blue-500'
+        },
+        {
+            title: 'Manage Faculty',
+            description: 'Add, edit, and manage faculty members',
+            icon: Users,
+            path: '/principal/faculty',
+            color: 'bg-purple-500'
+        },
+        {
+            title: 'Front Office Overview',
+            description: 'View admission leads and statistics',
+            icon: Building2,
+            path: '/principal/reception-view',
+            color: 'bg-green-500'
+        },
+        {
+            title: 'Visual Editor',
+            description: 'Click-to-edit website sections visually',
+            icon: Palette,
+            path: '/principal/content',
+            color: 'bg-orange-500'
+        },
+        {
             title: 'Content Editor',
-            description: 'Edit website sections and manage visibility',
+            description: 'Edit website text content',
             icon: FileText,
             path: '/principal/editor',
-            color: 'bg-blue-500',
-            internal: true
+            color: 'bg-teal-500'
         },
         {
             title: 'Audit Logs',
-            description: 'Track all system activities and changes',
+            description: 'Track all system activities',
             icon: History,
             path: '/principal/audit',
-            color: 'bg-purple-500',
-            internal: true
-        },
-        {
-            title: 'Reception Dashboard',
-            description: 'View and monitor admission leads',
-            icon: Building2,
-            path: '/reception',
-            color: 'bg-green-500',
-            internal: true
-        },
-        {
-            title: 'Admin Dashboard',
-            description: 'Access admin tools and settings',
-            icon: Settings,
-            path: '/admin/dashboard',
-            color: 'bg-orange-500',
-            internal: true
+            color: 'bg-red-500'
         }
     ];
 
@@ -71,7 +83,7 @@ export function PrincipalDashboard() {
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold">Principal's Command Center</h1>
-                                <p className="text-sm text-primary-foreground/80">Full system access and oversight</p>
+                                <p className="text-sm text-primary-foreground/80">Full system access and management</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -97,14 +109,14 @@ export function PrincipalDashboard() {
                 <div className="bg-card rounded-2xl border border-border p-8 mb-8 shadow-sm">
                     <h2 className="text-2xl font-bold text-foreground mb-2">Welcome, Principal</h2>
                     <p className="text-muted">
-                        As Principal, you have full access to all areas of the system. Use the navigation below to manage content,
-                        view audit logs, and oversee all department activities.
+                        Manage your institution's content, faculty, and monitor all activities from this central dashboard.
+                        All changes are logged for accountability.
                     </p>
                 </div>
 
                 {/* Navigation Hub */}
-                <h3 className="text-lg font-semibold text-foreground mb-4">Quick Access</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Management Tools</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {hubCards.map((card) => {
                         const Icon = card.icon;
                         return (
@@ -136,28 +148,35 @@ export function PrincipalDashboard() {
 
                 {/* Quick Links */}
                 <div className="bg-secondary/30 rounded-xl p-6">
-                    <h3 className="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Also Available</h3>
+                    <h3 className="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Public Site Preview</h3>
                     <div className="flex flex-wrap gap-3">
-                        <Link
-                            to="/"
+                        <a
+                            href="/"
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm hover:bg-secondary transition-colors"
                         >
-                            View Public Website
+                            View Website
                             <ExternalLink className="size-3" />
-                        </Link>
-                        <Link
-                            to="/faculty"
+                        </a>
+                        <a
+                            href="/faculty"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm hover:bg-secondary transition-colors"
                         >
-                            Faculty Directory
-                        </Link>
-                        <Link
-                            to="/news"
+                            Public Faculty Page
+                            <ExternalLink className="size-3" />
+                        </a>
+                        <a
+                            href="/news"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm hover:bg-secondary transition-colors"
                         >
-                            News & Updates
-                        </Link>
+                            Public News Page
+                            <ExternalLink className="size-3" />
+                        </a>
                     </div>
                 </div>
             </main>
