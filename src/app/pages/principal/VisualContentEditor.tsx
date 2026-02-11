@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Palette, AlertTriangle, ExternalLink, Navigation, ChevronDown, LayoutDashboard, BookOpen, Users, ClipboardList, Newspaper } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Palette, AlertTriangle, ExternalLink, Navigation, ChevronDown, LayoutDashboard, BookOpen, Users, ClipboardList, Newspaper } from 'lucide-react';
 import { HeroSection } from '../../components/home/HeroSection';
 import { PrincipalMessage } from '../../components/home/PrincipalMessage';
 import { NewsTicker } from '../../components/home/NewsTicker';
@@ -25,23 +25,15 @@ export function VisualContentEditor() {
 
     return (
         <div className="min-h-screen bg-background pb-20">
-            {/* Fixed Header */}
-            <header className="sticky top-0 z-[90] bg-card border-b border-border shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            {/* Sub-Toolbar: Editor tools palette (not a navigation header) */}
+            <div className="sticky top-16 z-30 bg-gray-100 border-b border-gray-200 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link
-                                to="/principal"
-                                className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                            >
-                                <ArrowLeft className="size-5 text-muted" />
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <Palette className="size-6 text-accent" />
-                                <div>
-                                    <h1 className="text-xl font-bold text-foreground">Visual Editor</h1>
-                                    <p className="text-sm text-muted">Click customized sections to edit</p>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            <Palette className="size-5 text-accent" />
+                            <div>
+                                <h1 className="text-lg font-semibold text-foreground">Visual Editor</h1>
+                                <p className="text-xs text-muted">Click sections to edit</p>
                             </div>
                         </div>
 
@@ -51,7 +43,7 @@ export function VisualContentEditor() {
                             <div className="relative">
                                 <button
                                     onClick={() => setIsQuickJumpOpen(!isQuickJumpOpen)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg text-sm hover:bg-accent/90 transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent text-accent-foreground rounded-lg text-sm hover:bg-accent/90 transition-colors"
                                 >
                                     <Navigation className="size-4" />
                                     Quick Actions
@@ -91,7 +83,7 @@ export function VisualContentEditor() {
                                 href="/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors border border-border"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-foreground rounded-lg text-sm hover:bg-gray-50 transition-colors border border-gray-300"
                             >
                                 <ExternalLink className="size-4" />
                                 Live Site
@@ -99,7 +91,7 @@ export function VisualContentEditor() {
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* Editor Mode Banner */}
             <div className="bg-amber-100 border-b border-amber-200 py-2 px-4">

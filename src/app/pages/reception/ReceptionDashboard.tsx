@@ -1,13 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp, addDoc, serverTimestamp } from 'firebase/firestore';
 import { updateAdmissionStatus } from '../../../lib/db-helpers';
 import type { Admission, AdmissionStatus } from '../../../types/firestore';
 import { toast } from 'sonner';
 import {
-    LogOut,
     Building2,
     UserPlus,
     Phone,
@@ -19,7 +16,6 @@ import {
 } from 'lucide-react';
 
 export function ReceptionDashboard() {
-    const navigate = useNavigate();
     const [admissions, setAdmissions] = useState<(Admission & { id: string })[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingRow, setEditingRow] = useState<string | null>(null);
@@ -28,15 +24,6 @@ export function ReceptionDashboard() {
     const [showAddForm, setShowAddForm] = useState(false);
     const [newLead, setNewLead] = useState({ studentName: '', phone: '', course: 'Science' });
     const [addingLead, setAddingLead] = useState(false);
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate('/admin/login', { replace: true });
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
 
     // Fetch admissions in real-time
     useEffect(() => {
@@ -142,32 +129,13 @@ export function ReceptionDashboard() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-card border-b border-border shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent text-accent-foreground rounded-full flex items-center justify-center">
-                                <Building2 className="size-5" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-foreground">Front Office CRM</h1>
-                                <p className="text-sm text-muted">Admissions Lead Management</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-                        >
-                            <LogOut className="size-4" />
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
-
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Page Title */}
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-foreground">Front Office CRM</h1>
+                    <p className="text-sm text-muted mt-1">Admissions Lead Management</p>
+                </div>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-card rounded-xl p-6 border border-border shadow-sm">

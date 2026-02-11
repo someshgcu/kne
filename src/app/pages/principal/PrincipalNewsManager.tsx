@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { collection, onSnapshot, query, orderBy, doc, deleteDoc, addDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../../../lib/firebase';
 import { logAction } from '../../../lib/db-helpers';
 import { toast } from 'sonner';
 import {
-    ArrowLeft,
     Loader2,
     Plus,
     Pencil,
@@ -198,34 +196,21 @@ export function PrincipalNewsManager() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-card border-b border-border shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link to="/principal" className="p-2 hover:bg-secondary rounded-lg transition-colors">
-                                <ArrowLeft className="size-5 text-muted" />
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <Newspaper className="size-6 text-accent" />
-                                <div>
-                                    <h1 className="text-xl font-bold text-foreground">News Manager</h1>
-                                    <p className="text-sm text-muted">Add, edit, and manage news articles</p>
-                                </div>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleAdd}
-                            className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 font-medium transition-colors"
-                        >
-                            <Plus className="size-4" />
-                            Add News
-                        </button>
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Page Title + Actions */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">News Manager</h1>
+                        <p className="text-sm text-muted mt-1">Add, edit, and manage news articles</p>
+                    </div>
+                    <button
+                        onClick={handleAdd}
+                        className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 font-medium transition-colors"
+                    >
+                        <Plus className="size-4" />
+                        Add News
+                    </button>
+                </div>
                 <div className="bg-card rounded-xl border border-border overflow-hidden">
                     {loading ? (
                         <div className="flex items-center justify-center py-20">

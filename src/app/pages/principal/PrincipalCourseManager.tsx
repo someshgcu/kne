@@ -5,10 +5,9 @@ import { db, storage } from '../../../lib/firebase';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 import {
-    BookOpen, Plus, Trash2, Loader2, X, Save, ArrowLeft,
+    BookOpen, Plus, Trash2, Loader2, X, Save,
     GraduationCap, Clock, Award, Edit, Upload as UploadIcon, Link as LinkIcon
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 interface Course {
     id: string;
@@ -300,26 +299,12 @@ export function PrincipalCourseManager() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-primary text-primary-foreground shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            to="/principal/dashboard"
-                            className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="size-5" />
-                        </Link>
-                        <div>
-                            <h1 className="text-2xl font-bold">Manage Courses</h1>
-                            <p className="text-sm text-primary-foreground/80">Add, edit, or remove courses offered</p>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Actions */}
+                {/* Page Title + Actions */}
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-foreground">Manage Courses</h1>
+                    <p className="text-sm text-muted mt-1">Add, edit, or remove courses offered</p>
+                </div>
                 <div className="flex justify-between items-center mb-8">
                     <p className="text-body">
                         {courses.length} course{courses.length !== 1 ? 's' : ''} configured

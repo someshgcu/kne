@@ -1,8 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
+import { Link } from 'react-router-dom';
 import {
-    LogOut,
     GraduationCap,
     FileText,
     History,
@@ -10,24 +7,12 @@ import {
     Users,
     Newspaper,
     ExternalLink,
-    Shield,
     Palette,
     Upload,
     BookOpen
 } from 'lucide-react';
 
 export function PrincipalDashboard() {
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate('/admin/login', { replace: true });
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
-
     const hubCards = [
         {
             title: 'Manage Courses',
