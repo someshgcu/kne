@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -38,66 +38,63 @@ import { PrincipalCourseManager } from './pages/principal/PrincipalCourseManager
 // Reception/Front Office Pages
 import { ReceptionDashboard } from './pages/reception/ReceptionDashboard';
 
+// Component to conditionally render footer
+function ConditionalFooter() {
+  const location = useLocation();
+  const publicRoutes = ['/', '/admissions', '/faculty', '/courses', '/careers', '/news'];
+  const showFooter = publicRoutes.includes(location.pathname) || location.pathname.startsWith('/courses/');
+  return showFooter ? <Footer /> : null;
+}
+
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <div className="min-h-screen flex flex-col">
+        {/* Universal Header - appears on all pages */}
+        <Header />
+
         <Routes>
-          {/* Public Routes with Header/Footer */}
+          {/* Public Routes - Now without duplicate headers */}
           <Route path="/" element={
             <>
-              <Header />
               <HomePage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/admissions" element={
             <>
-              <Header />
               <AdmissionsPage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/faculty" element={
             <>
-              <Header />
               <FacultyPage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/courses" element={
             <>
-              <Header />
               <CoursesPage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/courses/:courseId" element={
             <>
-              <Header />
               <CourseDetailsPage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/careers" element={
             <>
-              <Header />
               <CareersPage />
-              <Footer />
               <Chatbot />
             </>
           } />
           <Route path="/news" element={
             <>
-              <Header />
               <BlogPage />
-              <Footer />
               <Chatbot />
             </>
           } />
@@ -200,6 +197,9 @@ export default function App() {
           {/* 404 Not Found */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+
+        {/* Conditional Footer - only on public pages */}
+        <ConditionalFooter />
 
         <Toaster position="top-right" />
       </div>

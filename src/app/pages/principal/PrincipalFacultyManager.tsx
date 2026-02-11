@@ -250,8 +250,9 @@ export function PrincipalFacultyManager() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-card rounded-xl shadow-xl w-full max-w-lg border border-border">
-                        <div className="flex items-center justify-between p-4 border-b border-border">
+                    <div className="bg-card rounded-xl shadow-xl max-h-[85vh] w-[90vw] max-w-lg flex flex-col p-0 gap-0 border border-border">
+                        {/* Header: Fixed at top */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                             <h3 className="text-lg font-semibold text-foreground">
                                 {editingItem ? 'Edit Faculty' : 'Add Faculty'}
                             </h3>
@@ -262,7 +263,9 @@ export function PrincipalFacultyManager() {
                                 <X className="size-5 text-muted" />
                             </button>
                         </div>
-                        <div className="p-4 space-y-4">
+
+                        {/* Body: Scrollable */}
+                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
                                 <input
@@ -330,7 +333,9 @@ export function PrincipalFacultyManager() {
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end gap-3 p-4 border-t border-border">
+
+                        {/* Footer: Fixed at bottom */}
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-gray-50/50 shrink-0">
                             <button
                                 onClick={() => setShowModal(false)}
                                 className="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"

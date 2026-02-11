@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../../lib/firebase';
 import { toast } from 'sonner';
+import imageCompression from 'browser-image-compression';
 import {
     BookOpen, Plus, Trash2, Loader2, X, Save, ArrowLeft,
-    GraduationCap, Clock, Award
+    GraduationCap, Clock, Award, Edit, Upload as UploadIcon, Link as LinkIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,6 +18,7 @@ interface Course {
     eligibility: string;
     image: string;
     subjects: string[];
+    futureScope?: string;
 }
 
 export function PrincipalCourseManager() {
@@ -25,14 +28,41 @@ export function PrincipalCourseManager() {
     const [isSaving, setIsSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    // Form state
+    // Edit modal state
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+
+    // Image upload state
+    const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [compressedFile, setCompressedFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [compressing, setCompressing] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [imagePreview, setImagePreview] = useState('');
+    const [originalSize, setOriginalSize] = useState(0);
+    const [compressedSize, setCompressedSize] = useState(0);
+
+    // Form state for adding
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         duration: '2 Years',
         eligibility: '',
         image: '',
-        subjects: ''
+        subjects: '',
+        futureScope: ''
+    });
+
+    // Form state for editing
+    const [editFormData, setEditFormData] = useState({
+        title: '',
+        description: '',
+        duration: '2 Years',
+        eligibility: '',
+        image: '',
+        subjects: '',
+        futureScope: ''
     });
 
     useEffect(() => {
@@ -87,7 +117,8 @@ export function PrincipalCourseManager() {
                 duration: '2 Years',
                 eligibility: '',
                 image: '',
-                subjects: ''
+                subjects: '',
+                futureScope: ''
             });
             fetchCourses();
         } catch (error) {
@@ -112,6 +143,158 @@ export function PrincipalCourseManager() {
             toast.error('Failed to delete course');
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    // Edit Modal Function
+    const handleEditClick = (course: Course) => {
+        setEditingCourse(course);
+        setEditFormData({
+            title: course.title,
+            description: course.description,
+            duration: course.duration,
+            eligibility: course.eligibility,
+            image: course.image,
+            subjects: course.subjects.join(', '),
+            futureScope: course.futureScope || ''
+        });
+        setImagePreview(course.image);
+        setImageMode('url');
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingCourse(null);
+        setSelectedFile(null);
+        setCompressedFile(null);
+        setImagePreview('');
+        setOriginalSize(0);
+        setCompressedSize(0);
+        setImageMode('url');
+    };
+
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setSelectedFile(file);
+        setOriginalSize(file.size);
+
+        // Create preview of original
+        const reader = new FileReader();
+        reader.onload = () => setImagePreview(reader.result as string);
+        reader.readAsDataURL(file);
+
+        // Auto-compress immediately
+        await compressImage(file);
+    };
+
+    const compressImage = async (file: File) => {
+        setCompressing(true);
+        try {
+            const options = {
+                maxSizeMB: 1,              // Max file size 1MB
+                maxWidthOrHeight: 1920,    // Max dimensions 1920px
+                useWebWorker: true,        // Use web worker for better performance
+                fileType: 'image/webp',    // Convert to WebP
+                initialQuality: 0.8        // 80% quality
+            };
+
+            const compressed = await imageCompression(file, options);
+            setCompressedFile(compressed);
+            setCompressedSize(compressed.size);
+
+            // Create preview of compressed image
+            const reader = new FileReader();
+            reader.onload = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(compressed);
+
+            const reduction = ((1 - compressed.size / file.size) * 100).toFixed(0);
+            toast.success(`Image compressed! ${reduction}% smaller`);
+        } catch (error) {
+            console.error('Compression error:', error);
+            toast.error('Failed to compress image');
+            setCompressedFile(file); // Fallback to original if compression fails
+            setCompressedSize(file.size);
+        } finally {
+            setCompressing(false);
+        }
+    };
+
+    const handleUploadImage = async () => {
+        if (!compressedFile || !editingCourse) return;
+
+        setUploading(true);
+        const fileName = `${editingCourse.id}_${Date.now()}.webp`;
+        const storageRef = ref(storage, `courses/${editingCourse.id}/${fileName}`);
+        const uploadTask = uploadBytesResumable(storageRef, compressedFile);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(Math.round(progress));
+            },
+            (error) => {
+                toast.error('Upload failed: ' + error.message);
+                setUploading(false);
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                setEditFormData(prev => ({ ...prev, image: downloadURL }));
+                setImagePreview(downloadURL);
+                setUploading(false);
+                const sizeKB = (compressedSize / 1024).toFixed(0);
+                toast.success(`Image uploaded! (${sizeKB} KB)`);
+                setSelectedFile(null);
+                setCompressedFile(null);
+            }
+        );
+    };
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingCourse || !editFormData.title.trim() || !editFormData.description.trim()) {
+            toast.error('Title and description are required');
+            return;
+        }
+
+        if (uploading) {
+            toast.error('Please wait for image upload to complete');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const subjectsArray = editFormData.subjects
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            await updateDoc(doc(db, 'courses', editingCourse.id), {
+                title: editFormData.title.trim(),
+                description: editFormData.description.trim(),
+                duration: editFormData.duration,
+                eligibility: editFormData.eligibility.trim(),
+                image: editFormData.image.trim(),
+                subjects: subjectsArray,
+                futureScope: editFormData.futureScope.trim(),
+                updatedAt: serverTimestamp()
+            });
+
+            toast.success('Course updated successfully!');
+            handleCloseEditModal();
+            fetchCourses();
+        } catch (error) {
+            console.error('Error updating course:', error);
+            toast.error('Failed to update course');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -223,18 +406,32 @@ export function PrincipalCourseManager() {
                                     </div>
 
                                     {/* Actions */}
-                                    <button
-                                        onClick={() => handleDeleteCourse(course.id, course.title)}
-                                        disabled={deletingId === course.id}
-                                        className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm disabled:opacity-50"
-                                    >
-                                        {deletingId === course.id ? (
-                                            <Loader2 className="size-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="size-4" />
-                                        )}
-                                        Delete Course
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEditClick(course)}
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                                        >
+                                            <Edit className="size-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteCourse(course.id, course.title)}
+                                            disabled={deletingId === course.id}
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg transition-colors"
+                                        >
+                                            {deletingId === course.id ? (
+                                                <>
+                                                    <Loader2 className="size-4 animate-spin" />
+                                                    Deleting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Trash2 className="size-4" />
+                                                    Delete
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             </article>
                         ))}
@@ -368,6 +565,267 @@ export function PrincipalCourseManager() {
                                     <>
                                         <Save className="size-4" />
                                         Add Course
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* EDIT COURSE MODAL */}
+            {isEditModalOpen && editingCourse && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-card border border-border rounded-xl max-h-[85vh] w-[90vw] max-w-2xl flex flex-col p-0 gap-0">
+                        {/* Header: Fixed at top */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+                            <h2 className="text-2xl font-bold flex items-center gap-2">
+                                <Edit className="size-6" />
+                                Edit Course: {editingCourse.title}
+                            </h2>
+                            <button
+                                onClick={handleCloseEditModal}
+                                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                            >
+                                <X className="size-5" />
+                            </button>
+                        </div>
+
+                        {/* Body: Scrollable */}
+                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                            {/* Title */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editFormData.title}
+                                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                                    placeholder="e.g., Bachelor of Commerce"
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Description <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={editFormData.description}
+                                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                                    placeholder="Course description"
+                                    rows={3}
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                />
+                            </div>
+
+                            {/* Duration & Eligibility Row */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Duration</label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.duration}
+                                        onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
+                                        placeholder="e.g., 3 Years"
+                                        className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Eligibility</label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.eligibility}
+                                        onChange={(e) => setEditFormData({ ...editFormData, eligibility: e.target.value })}
+                                        placeholder="e.g., 10+2 Pass"
+                                        className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Image Input Mode Toggle */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Course Image</label>
+                                <div className="flex gap-2 mb-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setImageMode('url')}
+                                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${imageMode === 'url'
+                                            ? 'bg-accent text-accent-foreground'
+                                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                            }`}
+                                    >
+                                        <LinkIcon className="size-4" />
+                                        Enter URL
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setImageMode('upload')}
+                                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${imageMode === 'upload'
+                                            ? 'bg-accent text-accent-foreground'
+                                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                            }`}
+                                    >
+                                        <UploadIcon className="size-4" />
+                                        Upload File
+                                    </button>
+                                </div>
+
+                                {/* URL Mode */}
+                                {imageMode === 'url' && (
+                                    <input
+                                        type="text"
+                                        value={editFormData.image}
+                                        onChange={(e) => {
+                                            setEditFormData({ ...editFormData, image: e.target.value });
+                                            setImagePreview(e.target.value);
+                                        }}
+                                        placeholder="https://example.com/image.jpg"
+                                        className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                    />
+                                )}
+
+                                {/* Upload Mode */}
+                                {imageMode === 'upload' && (
+                                    <div className="space-y-3">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageSelect}
+                                            className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                        />
+
+                                        {/* File Size Info */}
+                                        {selectedFile && (
+                                            <div className="text-sm space-y-1 p-3 bg-secondary/30 rounded-lg">
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted">Original:</span>
+                                                    <span>{formatFileSize(originalSize)}</span>
+                                                </div>
+                                                {compressedFile && (
+                                                    <>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-muted">Compressed:</span>
+                                                            <span className="text-green-600 font-medium">
+                                                                {formatFileSize(compressedSize)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-muted">Reduction:</span>
+                                                            <span className="text-green-600 font-semibold">
+                                                                {((1 - compressedSize / originalSize) * 100).toFixed(0)}% smaller
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Compression Status */}
+                                        {compressing && (
+                                            <div className="flex items-center gap-2 text-sm text-blue-500">
+                                                <Loader2 className="size-4 animate-spin" />
+                                                Compressing to WebP...
+                                            </div>
+                                        )}
+
+                                        {/* Upload Button */}
+                                        {compressedFile && !uploading && (
+                                            <button
+                                                type="button"
+                                                onClick={handleUploadImage}
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                                            >
+                                                <UploadIcon className="size-4" />
+                                                Upload to Firebase Storage
+                                            </button>
+                                        )}
+
+                                        {/* Upload Progress */}
+                                        {uploading && (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span>Uploading...</span>
+                                                    <span className="font-medium">{uploadProgress}%</span>
+                                                </div>
+                                                <div className="w-full bg-secondary rounded-full h-2">
+                                                    <div
+                                                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Image Preview */}
+                                {imagePreview && (
+                                    <div className="mt-3">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-48 object-cover rounded-lg border border-border"
+                                            onError={() => setImagePreview('')}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Subjects */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Subjects (comma-separated)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editFormData.subjects}
+                                    onChange={(e) => setEditFormData({ ...editFormData, subjects: e.target.value })}
+                                    placeholder="e.g., Mathematics, Physics, Chemistry"
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                />
+                            </div>
+
+                            {/* Future Scope */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    Future Scope / Career Pathways
+                                </label>
+                                <textarea
+                                    value={editFormData.futureScope}
+                                    onChange={(e) => setEditFormData({ ...editFormData, futureScope: e.target.value })}
+                                    placeholder="Describe career opportunities and pathways..."
+                                    rows={3}
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Footer: Fixed at bottom */}
+                        <div className="flex gap-3 px-6 py-4 border-t border-border bg-gray-50/50 shrink-0">
+                            <button
+                                onClick={handleCloseEditModal}
+                                className="flex-1 flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 transition-colors"
+                            >
+                                <X className="size-4" />
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveEdit}
+                                disabled={isSaving || uploading || !editFormData.title.trim() || !editFormData.description.trim()}
+                                className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="size-4 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="size-4" />
+                                        Save Changes
                                     </>
                                 )}
                             </button>

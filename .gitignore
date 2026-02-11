@@ -46,6 +46,10 @@ coverage/
 .firebase/
 firebase-debug.log
 .firebaserc
+firebase.json
+firestore.indexes.json
+firestore.rules
+
 
 # Gemini
 .gemini/
