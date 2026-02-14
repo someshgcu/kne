@@ -61,8 +61,8 @@ export function Header() {
                 key={link.path}
                 to={link.path}
                 className={`px-3 py-2 rounded-lg transition-colors ${location.pathname === link.path
-                    ? 'bg-primary-foreground/20 font-semibold'
-                    : 'hover:bg-primary-foreground/10'
+                  ? 'bg-primary-foreground/20 font-semibold'
+                  : 'hover:bg-primary-foreground/10'
                   }`}
               >
                 {link.label}
@@ -106,8 +106,8 @@ export function Header() {
                   to={link.path}
                   onClick={() => setIsMenuOpen(false)}
                   className={`px-4 py-2 rounded-lg transition-colors ${location.pathname === link.path
-                      ? 'bg-primary-foreground/20 font-semibold'
-                      : 'hover:bg-primary-foreground/10'
+                    ? 'bg-primary-foreground/20 font-semibold'
+                    : 'hover:bg-primary-foreground/10'
                     }`}
                 >
                   {link.label}
