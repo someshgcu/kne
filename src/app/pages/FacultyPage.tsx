@@ -28,7 +28,9 @@ export function FacultyPage() {
 
     const relevantSubjects = subjectMap[filter];
     return sourceTeachers.filter((teacher) =>
-      teacher.subjects.some((subject) => relevantSubjects.includes(subject))
+      (teacher.subjects || []).some((subject) =>
+        relevantSubjects.includes(subject)
+      )
     );
   };
 
@@ -98,8 +100,8 @@ export function FacultyPage() {
                 key={f.value}
                 onClick={() => setFilter(f.value)}
                 className={`px-6 py-3 rounded-lg transition-all font-medium ${filter === f.value
-                    ? 'bg-accent text-accent-foreground shadow-md'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  ? 'bg-accent text-accent-foreground shadow-md'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 aria-pressed={filter === f.value}
               >

@@ -85,7 +85,7 @@ export function AdminDashboard() {
       title: 'Faculty Management',
       description: 'Add and manage teacher profiles',
       icon: Users,
-      path: '/faculty',
+      path: '/admin/faculty',
       color: 'bg-orange-500'
     }
   ];

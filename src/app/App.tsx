@@ -24,6 +24,7 @@ import { ContentStudio } from './pages/admin/ContentStudio';
 import { DataUpload } from './pages/admin/DataUpload';
 import { AIContentGenerator } from './pages/admin/AIContentGenerator';
 import { BlogEditor } from './pages/admin/BlogEditor';
+import  AdminFacultyPage  from './pages/admin/AdminFacultyPage';
 
 // Principal Pages
 import { PrincipalDashboard } from './pages/principal/PrincipalDashboard';
@@ -135,6 +136,11 @@ export default function App() {
           <Route path="/admin/blog-editor" element={
             <ProtectedRoute allowedRoles={['admin', 'principal']}>
               <BlogEditor />
+            </ProtectedRoute>
+          } />
+          <Route path='/admin/faculty' element={
+            <ProtectedRoute allowedRoles={['admin', 'principal']}>
+              <AdminFacultyPage />
             </ProtectedRoute>
           } />
 
