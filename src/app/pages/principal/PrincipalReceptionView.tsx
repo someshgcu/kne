@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import type { Admission, AdmissionStatus } from '../../../types/firestore';
 import {
-    ArrowLeft,
     Loader2,
     Building2,
     Users,
@@ -65,31 +63,18 @@ export function PrincipalReceptionView() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-card border-b border-border shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link to="/principal" className="p-2 hover:bg-secondary rounded-lg transition-colors">
-                                <ArrowLeft className="size-5 text-muted" />
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <Building2 className="size-6 text-accent" />
-                                <div>
-                                    <h1 className="text-xl font-bold text-foreground">Reception Overview</h1>
-                                    <p className="text-sm text-muted">Read-only view of admission leads</p>
-                                </div>
-                            </div>
-                        </div>
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-                            <Eye className="size-4" />
-                            View Only
-                        </span>
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Page Title */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Reception Overview</h1>
+                        <p className="text-sm text-muted mt-1">Read-only view of admission leads</p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+                        <Eye className="size-4" />
+                        View Only
+                    </span>
+                </div>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-card rounded-xl p-6 border border-border shadow-sm">

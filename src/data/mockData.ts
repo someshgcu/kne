@@ -19,6 +19,7 @@ export interface NewsItem {
   excerpt: string;
   content: string;
   image?: string;
+  isVisible?: boolean;
 }
 
 export interface Job {
@@ -52,6 +53,7 @@ export interface PrincipalMessage {
   designation: string;
   photo: string;
   message: string;
+  image?: string;
 }
 
 export interface Course {
@@ -439,7 +441,7 @@ export const galleryImages = [
   { id: "g6", title: "Cultural Fest", query: "college cultural dance performance" }
 ];
 
-export const principalMessage = {
+export const principalMessage: PrincipalMessage = {
   name: "Dr. Sudhir Malhotra",
   designation: "Principal",
   photo: "principal",

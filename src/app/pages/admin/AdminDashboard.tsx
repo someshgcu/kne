@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
+import { Link } from 'react-router-dom';
 import { collection, getCountFromServer } from 'firebase/firestore';
-import { auth, db } from '../../../lib/firebase';
-import { LayoutDashboard, FileText, Users, LogOut, TrendingUp, GraduationCap, Wrench, Sparkles, Loader2 } from 'lucide-react';
+import { db } from '../../../lib/firebase';
+import { LayoutDashboard, FileText, Users, TrendingUp, GraduationCap, Wrench, Sparkles, Loader2 } from 'lucide-react';
 import { DataSeeder } from '../../components/admin/DataSeeder';
 
 interface StatsData {
@@ -14,7 +13,6 @@ interface StatsData {
 }
 
 export function AdminDashboard() {
-  const navigate = useNavigate();
   const [stats, setStats] = useState<StatsData>({
     totalStudents: 0,
     passRate: '99%',
@@ -48,16 +46,6 @@ export function AdminDashboard() {
 
     fetchStats();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/admin/login', { replace: true });
-    } catch (error) {
-      console.error('Logout error:', error);
-      navigate('/admin/login', { replace: true });
-    }
-  };
 
   const tools = [
     {
@@ -99,29 +87,12 @@ export function AdminDashboard() {
 
   return (
     <main className="min-h-screen bg-secondary/10">
-      {/* Header */}
-      <header className="bg-primary text-primary-foreground shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <GraduationCap className="size-8" aria-hidden="true" />
-              <div>
-                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                <p className="text-sm text-primary-foreground/80">INCPUC Management Portal</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-primary">Admin Dashboard</h1>
+          <p className="text-muted mt-1">INCPUC Management Portal</p>
+        </div>
         {/* Stats Grid */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-primary mb-6">Quick Stats</h2>

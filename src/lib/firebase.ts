@@ -6,6 +6,7 @@ import {
   indexedDBLocalPersistence
 } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyACLACg6D6o_hyUVHK7uCJXf47eP_gdnaM",
@@ -44,5 +45,8 @@ export const db = initializeFirestore(app,
   },
   "incpuc"
 );
+
+// Initialize Firebase Storage for image uploads
+export const storage = getStorage(app);
 
 export default app;

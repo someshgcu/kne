@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../lib/firebase';
 import { logAction } from '../../../lib/db-helpers';
 import { toast } from 'sonner';
 import {
-    ArrowLeft,
     Loader2,
     Plus,
     Pencil,
@@ -150,34 +148,21 @@ export function PrincipalFacultyManager() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-card border-b border-border shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link to="/principal" className="p-2 hover:bg-secondary rounded-lg transition-colors">
-                                <ArrowLeft className="size-5 text-muted" />
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <Users className="size-6 text-accent" />
-                                <div>
-                                    <h1 className="text-xl font-bold text-foreground">Faculty Manager</h1>
-                                    <p className="text-sm text-muted">Add, edit, and manage faculty members</p>
-                                </div>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleAdd}
-                            className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 font-medium transition-colors"
-                        >
-                            <Plus className="size-4" />
-                            Add Faculty
-                        </button>
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Page Title + Actions */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Faculty Manager</h1>
+                        <p className="text-sm text-muted mt-1">Add, edit, and manage faculty members</p>
+                    </div>
+                    <button
+                        onClick={handleAdd}
+                        className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 font-medium transition-colors"
+                    >
+                        <Plus className="size-4" />
+                        Add Faculty
+                    </button>
+                </div>
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="size-8 animate-spin text-accent" />
@@ -250,8 +235,9 @@ export function PrincipalFacultyManager() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-card rounded-xl shadow-xl w-full max-w-lg border border-border">
-                        <div className="flex items-center justify-between p-4 border-b border-border">
+                    <div className="bg-card rounded-xl shadow-xl max-h-[85vh] w-[90vw] max-w-lg flex flex-col p-0 gap-0 border border-border">
+                        {/* Header: Fixed at top */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                             <h3 className="text-lg font-semibold text-foreground">
                                 {editingItem ? 'Edit Faculty' : 'Add Faculty'}
                             </h3>
@@ -262,7 +248,9 @@ export function PrincipalFacultyManager() {
                                 <X className="size-5 text-muted" />
                             </button>
                         </div>
-                        <div className="p-4 space-y-4">
+
+                        {/* Body: Scrollable */}
+                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
                                 <input
@@ -330,7 +318,9 @@ export function PrincipalFacultyManager() {
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end gap-3 p-4 border-t border-border">
+
+                        {/* Footer: Fixed at bottom */}
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-gray-50/50 shrink-0">
                             <button
                                 onClick={() => setShowModal(false)}
                                 className="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"

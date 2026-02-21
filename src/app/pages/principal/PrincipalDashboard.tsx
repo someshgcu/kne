@@ -1,8 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
+import { Link } from 'react-router-dom';
 import {
-    LogOut,
     GraduationCap,
     FileText,
     History,
@@ -10,24 +7,12 @@ import {
     Users,
     Newspaper,
     ExternalLink,
-    Shield,
     Palette,
     Upload,
     BookOpen
 } from 'lucide-react';
 
 export function PrincipalDashboard() {
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate('/admin/login', { replace: true });
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
-
     const hubCards = [
         {
             title: 'Manage Courses',
@@ -89,36 +74,6 @@ export function PrincipalDashboard() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-primary text-primary-foreground shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                                <GraduationCap className="size-6" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold">Principal's Command Center</h1>
-                                <p className="text-sm text-primary-foreground/80">Full system access and management</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary-foreground/20 rounded-full text-sm">
-                                <Shield className="size-4" />
-                                Principal
-                            </span>
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg transition-colors"
-                            >
-                                <LogOut className="size-4" />
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
@@ -195,7 +150,7 @@ export function PrincipalDashboard() {
                         </a>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
