@@ -34,11 +34,11 @@ export function HeroSection({ editorMode = false }: HeroSectionProps) {
   if (loading) {
     return (
       <section
-        className="relative bg-gradient-to-br from-primary via-primary to-secondary py-20 px-4 sm:px-6 lg:px-8"
+        className="relative bg-gradient-to-br from-primary via-primary to-secondary py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
         aria-label="Hero section"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-16 sm:py-20 lg:py-24">
             <Loader2 className="size-8 animate-spin text-primary-foreground/50" />
           </div>
         </div>
@@ -49,7 +49,7 @@ export function HeroSection({ editorMode = false }: HeroSectionProps) {
   // Render content - either editable or static
   const renderTitle = () => {
     const titleElement = (
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
         {title}
       </h1>
     );
@@ -122,7 +122,7 @@ export function HeroSection({ editorMode = false }: HeroSectionProps) {
 
   return (
     <section
-      className="relative bg-gradient-to-br from-primary via-primary to-secondary py-20 px-4 sm:px-6 lg:px-8"
+      className="relative bg-gradient-to-br from-primary via-primary to-secondary py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
       aria-label="Hero section"
     >
       <div className="max-w-7xl mx-auto">
@@ -144,7 +144,7 @@ export function HeroSection({ editorMode = false }: HeroSectionProps) {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-12">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-2">
                   <Award className="size-6 text-accent-foreground" aria-hidden="true" />
@@ -170,11 +170,11 @@ export function HeroSection({ editorMode = false }: HeroSectionProps) {
           </div>
 
           {/* Image */}
-          <div className="hidden lg:block">
+          <div className="mt-10 lg:mt-0">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80"
               alt="Students studying in a modern college environment"
-              className="rounded-2xl shadow-2xl w-full h-auto"
+              className="rounded-2xl shadow-2xl w-full h-auto max-h-[500px] object-cover"
             />
           </div>
         </div>

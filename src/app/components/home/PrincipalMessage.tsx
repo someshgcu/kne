@@ -156,10 +156,10 @@ export function PrincipalMessage({ editorMode = false }: PrincipalMessageProps) 
   // ---------- Loading skeleton ----------
   if (loading) {
     return (
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-border">
-            <div className="grid md:grid-cols-[300px_1fr] gap-8 md:gap-12 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8 md:gap-12 items-center">
               <div className="flex flex-col items-center">
                 <div className="w-48 h-48 rounded-full bg-secondary animate-pulse" />
                 <div className="mt-6 space-y-2 text-center w-full">
@@ -189,7 +189,7 @@ export function PrincipalMessage({ editorMode = false }: PrincipalMessageProps) 
 
   return (
     <>
-      <section className="py-16 px-4 sm:px-6 lg:px-8 relative group">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative group">
         {/* EDIT BUTTON OVERLAY (Only in Editor Mode) */}
         {editorMode && (
           <div className="absolute top-4 right-8 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -209,7 +209,7 @@ export function PrincipalMessage({ editorMode = false }: PrincipalMessageProps) 
           }`}
         >
           <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-border">
-            <div className="grid md:grid-cols-[300px_1fr] gap-8 md:gap-12 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8 md:gap-12 items-center">
               {/* Principal Photo */}
               <div className="flex flex-col items-center">
                 <div className="relative">
@@ -217,7 +217,7 @@ export function PrincipalMessage({ editorMode = false }: PrincipalMessageProps) 
                     src={displayMessage.image}
                     fallbackSrc="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80"
                     alt={displayMessage.name}
-                    className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover border-4 border-accent shadow-xl"
+                    className="w-40 h-40 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full object-cover border-4 border-accent shadow-xl"
                   />
                   <div className="absolute -bottom-4 -right-4 bg-accent text-accent-foreground p-3 rounded-full shadow-lg">
                     <Quote className="size-6" />

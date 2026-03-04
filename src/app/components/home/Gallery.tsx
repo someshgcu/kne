@@ -29,7 +29,7 @@ export function Gallery() {
             <div
               key={image.id}
               className={`relative group overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-shadow ${
-                index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''
+                index === 0 ? 'md:col-span-2 md:row-span-2' : ''
               }`}
             >
               <ImageWithFallback
@@ -42,7 +42,7 @@ export function Gallery() {
                 }-58d5b64e95d?w=800&q=80`}
                 alt={image.title}
                 className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${
-                  index === 0 ? 'h-full min-h-[400px]' : 'h-64'
+                  index === 0 ? 'h-72 sm:h-96 md:h-full' : 'h-56 sm:h-64'
                 }`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">

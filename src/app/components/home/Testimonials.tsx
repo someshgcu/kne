@@ -106,11 +106,11 @@ export function Testimonials({ editorMode = false }: TestimonialsProps) {
           </div>
 
           {/* Loading Skeleton */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="bg-card rounded-xl shadow-md border border-border p-6 animate-pulse"
+                className="bg-card rounded-xl shadow-md border border-border p-5 sm:p-6 animate-pulse"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-full bg-secondary" />
@@ -166,7 +166,7 @@ export function Testimonials({ editorMode = false }: TestimonialsProps) {
             {testimonialData.map((testimonial) => (
               <article
                 key={testimonial.id}
-                className={`bg-card rounded-xl shadow-md border border-border p-6 hover:shadow-lg transition-all flex flex-col relative ${editorMode ? 'cursor-pointer group/card hover:border-accent hover:ring-2 hover:ring-accent/20' : ''
+                className={`bg-card rounded-xl shadow-md border border-border p-5 sm:p-6 hover:shadow-lg transition-all flex flex-col relative ${editorMode ? 'cursor-pointer group/card hover:border-accent hover:ring-2 hover:ring-accent/20' : ''
                   }`}
                 onClick={editorMode ? () => handleEditClick(testimonial) : undefined}
                 title={editorMode ? "Click to edit testimonial" : undefined}
@@ -198,7 +198,7 @@ export function Testimonials({ editorMode = false }: TestimonialsProps) {
 
                 <div className="mb-4 flex-grow">
                   <Quote className="size-8 text-accent mb-2" aria-hidden="true" />
-                  <blockquote className="text-body leading-relaxed line-clamp-4">
+                  <blockquote className="text-body leading-relaxed line-clamp-3 sm:line-clamp-4">
                     "{testimonial.quote}"
                   </blockquote>
                 </div>

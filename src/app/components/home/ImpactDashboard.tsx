@@ -85,13 +85,13 @@ export function ImpactDashboard() {
         )}
 
         {/* Charts Grid */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Academic Excellence Line Chart */}
           <div className="bg-card rounded-xl shadow-lg p-6 border border-border lg:col-span-2">
             <h3 className="text-xl font-semibold text-primary mb-6">
               Academic Excellence Trend (3-Year Performance)
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 300}>
               <LineChart
                 data={academicExcellenceData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -148,7 +148,7 @@ export function ImpactDashboard() {
             <h3 className="text-xl font-semibold text-primary mb-6">
               Stream Comparison (2024 Distinction Rate)
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 300}>
               <BarChart
                 data={streamComparison}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -186,7 +186,7 @@ export function ImpactDashboard() {
             <h3 className="text-xl font-semibold text-primary mb-6">
               Overall Success Rate (2024)
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 300}>
               <PieChart>
                 <Pie
                   data={overallData}

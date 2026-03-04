@@ -103,118 +103,129 @@ export default function AdminFacultyPage() {
     }
 
     return (
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+        <main className="min-h-screen bg-[#FDFDFE]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-primary">
-                    Faculty Management
-                </h1>
-
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="w-full sm:w-auto bg-primary text-primary-foreground px-5 py-2.5 rounded-lg shadow hover:opacity-90 transition"
-                >
-                    + Add Faculty
-                </button>
-            </div>
-
-            {/* Faculty Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {teachers.map((teacher) => (
-                    <div
-                        key={teacher.id}
-                        className="bg-card border rounded-2xl shadow-sm hover:shadow-md transition flex flex-col"
-                    >
-                        <div className="flex-1">
-                            <TeacherCard teacher={teacher} />
-                        </div>
-
-                        {/* Admin Actions */}
-                        <div className="p-4 border-t">
-                            <button
-                                onClick={() => setConfirmId(teacher.id)}
-                                className="w-full flex items-center justify-center gap-2 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-                            >
-                                <Trash2 size={16} />
-                                Delete Faculty
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Add Faculty Modal */}
-            {showForm && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
-                    <div className="bg-card w-full max-w-lg rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-semibold mb-4">Add Faculty</h2>
-
-                        <div className="space-y-3">
-                            {Object.entries(formData).map(([key, value]) => (
-                                <input
-                                    key={key}
-                                    type="text"
-                                    placeholder={key}
-                                    value={value}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, [key]: e.target.value })
-                                    }
-                                    className="w-full border border-border p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            ))}
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
-                            <button
-                                onClick={() => setShowForm(false)}
-                                className="w-full sm:w-auto px-4 py-2 border rounded-lg hover:bg-secondary transition"
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-                                onClick={handleAdd}
-                                disabled={saving}
-                                className="w-full sm:w-auto bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition disabled:opacity-50"
-                            >
-                                {saving ? "Saving..." : "Save Faculty"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Confirm Delete Modal */}
-            {confirmId && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
-                    <div className="bg-card w-full max-w-sm rounded-2xl p-6 shadow-xl">
-                        <h2 className="text-lg font-semibold text-center mb-3">
-                            Confirm Deletion
-                        </h2>
-
-                        <p className="text-sm text-muted-foreground text-center mb-6">
-                            Are you sure you want to delete this faculty member?
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+                    <div>
+                        <h1 className="text-3xl font-bold text-[#2C1F70]">
+                            Faculty Management
+                        </h1>
+                        <p className="text-[#9A84A6] mt-1">
+                            Manage teacher profiles and academic data
                         </p>
+                    </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <button
-                                onClick={() => setConfirmId(null)}
-                                className="w-full border py-2 rounded-lg hover:bg-secondary transition"
-                            >
-                                Cancel
-                            </button>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="w-full sm:w-auto bg-[#2C1F70] text-white px-6 py-2.5 rounded-xl shadow hover:bg-[#24195d] transition"
+                    >
+                        + Add Faculty
+                    </button>
+                </div>
 
-                            <button
-                                onClick={handleDelete}
-                                className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-                            >
-                                Delete
-                            </button>
+                {/* Faculty Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {teachers.map((teacher) => (
+                        <div
+                            key={teacher.id}
+                            className="bg-white border border-[#D8D1E9] rounded-3xl shadow-sm hover:shadow-lg transition flex flex-col"
+                        >
+                            <div className="flex-1">
+                                <TeacherCard teacher={teacher} />
+                            </div>
+
+                            {/* Admin Actions */}
+                            <div className="p-5 border-t border-[#D8D1E9]">
+                                <button
+                                    onClick={() => setConfirmId(teacher.id)}
+                                    className="w-full bg-[#EFD22E] text-[#2C1F70] font-semibold py-2.5 rounded-xl hover:brightness-95 transition"
+                                >
+                                    Delete Faculty
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Add Faculty Modal */}
+                {showForm && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                        <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+                            <h2 className="text-2xl font-bold text-[#2C1F70] mb-6">
+                                Add Faculty
+                            </h2>
+
+                            <div className="space-y-4">
+                                {Object.entries(formData).map(([key, value]) => (
+                                    <div key={key}>
+                                        <label className="block text-sm font-medium text-[#2C1F70] mb-1 capitalize">
+                                            {key}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, [key]: e.target.value })
+                                            }
+                                            className="w-full border border-[#D8D1E9] px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EFD22E]"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+                                <button
+                                    onClick={() => setShowForm(false)}
+                                    className="w-full sm:w-auto border border-[#D8D1E9] px-5 py-2.5 rounded-xl hover:bg-[#F3F1FA] transition"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    onClick={handleAdd}
+                                    disabled={saving}
+                                    className="w-full sm:w-auto bg-[#2C1F70] text-white px-6 py-2.5 rounded-xl hover:bg-[#24195d] transition disabled:opacity-50"
+                                >
+                                    {saving ? "Saving..." : "Save Faculty"}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+
+                {/* Confirm Delete Modal */}
+                {confirmId && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                        <div className="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center">
+                            <h2 className="text-xl font-bold text-[#2C1F70] mb-3">
+                                Confirm Deletion
+                            </h2>
+
+                            <p className="text-[#9A84A6] mb-6">
+                                Are you sure you want to remove this faculty member?
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={() => setConfirmId(null)}
+                                    className="w-full border border-[#D8D1E9] py-2.5 rounded-xl hover:bg-[#F3F1FA] transition"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    onClick={handleDelete}
+                                    className="w-full bg-[#EFD22E] text-[#2C1F70] font-semibold py-2.5 rounded-xl hover:brightness-95 transition"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </main>
     );
 }

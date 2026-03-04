@@ -98,7 +98,7 @@ export function NewsTicker({ editorMode = false }: NewsTickerProps) {
         aria-labelledby="news-heading"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center gap-3 py-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <Loader2 className="size-6 animate-spin text-accent" />
             <p className="text-muted">Loading latest news...</p>
           </div>
@@ -159,7 +159,7 @@ export function NewsTicker({ editorMode = false }: NewsTickerProps) {
           </div>
 
           {/* News Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentNews.map((news) => (
               <article
                 key={news.id}
@@ -228,7 +228,7 @@ export function NewsTicker({ editorMode = false }: NewsTickerProps) {
       {/* Quick Edit Modal */}
       {isEditModalOpen && editingNews && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
-          <div className="bg-card border border-border rounded-xl max-h-[85vh] w-[90vw] max-w-2xl flex flex-col p-0 gap-0 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-card border border-border rounded-xl max-h-[90vh] w-full max-w-lg sm:max-w-2xl flex flex-col p-0 gap-0 animate-in fade-in zoom-in-95 duration-200">
             {/* Header: Fixed at top */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-2xl font-bold flex items-center gap-2">
